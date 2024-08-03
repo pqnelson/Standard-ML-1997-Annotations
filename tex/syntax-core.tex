@@ -98,7 +98,7 @@ denoting an integer in the ordinal range of the alphabet).\cr
 The \define{Formatting Characters} are a subset of the non-printable
 characters including at least space, tab, newline, and formfeed. The
 formfeed allows long strings to be written on more than one line, by
-writing ``~\verb+\+~`` at the end of one line and at the start of the next.
+writing ``~\verb+\+~'' at the end of one line and at the start of the next.
 \end{definition}
 
 \begin{definition}{Character constants}
@@ -140,7 +140,7 @@ For each syntactic class X marked as ``long'', there is a class
 by:
 \begin{longtable}{rcl}
 \nonterminal{longx} & $::=$ & \nonterminal{x} \\
-& \alt & \nonterminal{strid${}_{1}$}\texttt{.}$\cdots$\texttt{.}\nonterminal{strid${}_{n}$}\texttt{.}\nonterminal{x}\\
+& \alt & \nonterminal{strid${}_{1}$}\texttt{.}$\syndots$\texttt{.}\nonterminal{strid${}_{n}$}\texttt{.}\nonterminal{x}\\
 & & ($n\geq1$)
 \end{longtable}
 \noindent for an identifier and a long identifier, respectively.
@@ -294,9 +294,9 @@ are collectively referred to as \define{Fixity Directives}.
 
 \begin{clause}{Syntax of fixity directives}
 For $n\geq1$, we have the syntax for fixity directives look like:
-\[\mathtt{infix}~\langle d\rangle~vid_{1}\cdots vid_{n}\]
-\[\mathtt{infixr}~\langle d\rangle~vid_{1}\cdots vid_{n}\]
-\[\mathtt{nonfix}~vid_{1}\cdots vid_{n}\]
+\[\mathtt{infix}\ \langle d\rangle\ vid_{1}\ \syndots\ vid_{n}\]
+\[\mathtt{infixr}\ \langle d\rangle\ vid_{1}\ \syndots\ vid_{n}\]
+\[\mathtt{nonfix}\ vid_{1}\ \syndots\ vid_{n}\]
 where $\langle d\rangle$ is an optional decimal digit $d$ indicating
 binding precedence. A higher value of $d$ indicates tighter binding; the
 default is \texttt{0}.
@@ -308,6 +308,10 @@ for infixed operators must be between 0 and 9. In principle, there's no
 reason it cannot be something larger (say, representable as an unsigned
 byte or word --- i.e., between 0 and 256, or between 0 and
 $2^{64}\approx 18.4\times 10^{18}$).
+
+For what it's worth, in \S4.4.2 of the Haskell 2010 report\footnote{\url{http://www.haskell.org/onlinereport/haskell2010/haskellch4.html\#x10-820004.4.2}}, it appears
+that Haskell has the precedence [which it calls the ``fixity''] ``must be in the range 0 to 9''.
+So Haskell is following Standard ML here, neat.
 \end{comment}
 
 \begin{clause}{Associativity of infixed operators}
@@ -337,11 +341,11 @@ The \define{Scope} of a fixity directive $dir$ is the ensuing program
 text, except if $dir$ occurs in a declaration $dec$ in either of the
 phrases
 \begin{equation*}
-\mathtt{let}~dec~\mathtt{in}~\cdots~\mathtt{end}
+\mathtt{let}\ dec\ \mathtt{in}\ \syndots\ \mathtt{end}
 \end{equation*}
 or
 \begin{equation*}
-\mathtt{local}~dec~\mathtt{in}~\cdots~\mathtt{end}
+\mathtt{local}\ dec\ \mathtt{in}\ \syndots\ \mathtt{end}
 \end{equation*}
 then the scope of $dir$ does not extend beyond these phrases. Further
 scope limitations are imposed for Modules.
@@ -373,17 +377,17 @@ governing it:
 \begin{longtable}{rclcl}
 \nonterminal{xseq} & $::=$ & \nonterminal{x} & \quad & (singleton sequence)\\
   & \alt & & & (empty sequence)\\
-  & \alt & \verb+(+$x_{1}$\verb+,+$\cdots$\verb+,+$x_{n}$\verb+)+ & & (sequence, $n\geq1$)
+  & \alt & \verb+(+$x_{1}$\verb+,+ $\syndots\!$\verb+,+ $x_{n}$\verb+)+ & & (sequence, $n\geq1$)
 \end{longtable}
-Here the ``$\cdots$'' used means syntactic iteration, which is distinct
-from (and must not be confused with) ``\dots'' which is a reserved
+Here the ``$\,\syndots$'' used means syntactic iteration, which is distinct
+from (and must not be confused with) ``\wildcardrow'' which is a reserved
 keyword of the language.
 \item Alternative forms for each phrase class are in order of decreasing
   precedence; this resolves ambiguity in parsing (or so the Definition
   assures us, guiding us to Appendix B)
 \item L (resp., R) means left (resp., right) association
 \item Syntax of types binds more tightly than the syntax of expressions
-\item Each iterated construct (e.g., \nonterminal{match}, $\cdots$) extends as far
+\item Each iterated construct (e.g., \nonterminal{match}, $\syndots$) extends as far
   right as possible; therefore, in theory, parentheses may be needed
   around an expression which terminates with a match (like ``\texttt{fn}
   \nonterminal{match}'') if this occurs within a larger match. (I guess you could
@@ -451,7 +455,7 @@ The syntax for patterns:
 & \alt & \optional{\texttt{op}} \textit{longvid} & value identifier\\
 & \alt & \verb+{+ \optional{\textit{patrow}} \verb+}+ & record\\
 & \alt & \verb+{+ \textit{pat} \verb+}+ &\\
-\phantomsection\label{grammar:patrow}\nonterminal{patrow} & $::=$ & \dots & wildcard\\
+\phantomsection\label{grammar:patrow}\nonterminal{patrow} & $::=$ & \wildcardrow & wildcard\\
 & \alt & \nonterminal{lab} \verb+=+ \nonterminal{pat} \optional{\texttt{\char`,} \nonterminal{patrow}} & pattern row\\
 \phantomsection\label{grammar:pat}\nonterminal{pat} & $::=$ & \nonterminal{atpat} & atomic\\
 & \alt & \optional{\texttt{op}} \textit{longvid} \nonterminal{atpat} & constructed pattern\\
@@ -519,15 +523,15 @@ abstype declaration\\
 &\alt&\texttt{exception} \nonterminal{exbind} & exception declaration\\
 &\alt&\texttt{local} $dec_{1}$ \texttt{in} $dec_{2}$ \texttt{end} &
 local declaration\\
-&\alt&\texttt{open} $longstrid_{1}$ $\cdots$ $longstrid_{n}$ & open
+&\alt&\texttt{open} $longstrid_{1}$ $\syndots$ $longstrid_{n}$ & open
 declaration ($n\geq1$)\\
 &\alt&&empty declaration\\
 &\alt&$dec_{1}$ \optional{\texttt{;}} $dec_{2}$ & sequential declarations\\
-&\alt&\texttt{infix} \optional{\textit{d}} $vid_{1}$ $\cdots$ $vid_{n}$
+&\alt&\texttt{infix} \optional{\textit{d}} $vid_{1}$ $\syndots$ $vid_{n}$
 &infix (L) directive\\
-&\alt&\texttt{infixr} \optional{\textit{d}} $vid_{1}$ $\cdots$ $vid_{n}$
+&\alt&\texttt{infixr} \optional{\textit{d}} $vid_{1}$ $\syndots$ $vid_{n}$
 &infix (R) directive\\
-&\alt&\texttt{nonfix} \optional{\textit{d}} $vid_{1}$ $\cdots$ $vid_{n}$
+&\alt&\texttt{nonfix} \optional{\textit{d}} $vid_{1}$ $\syndots$ $vid_{n}$
 &nonfix directive\\
 %\phantomsection\label{grammar:}
 %% \end{longtable}

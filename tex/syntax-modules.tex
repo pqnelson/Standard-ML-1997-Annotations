@@ -34,8 +34,8 @@ In addition to the rules governing the scope of infixed operators in the
 Core language~\zref{syntax-core:infixed-operator:scope}, there is a
 further scope limitation: if \nonterminal{dir} occurs in a
 structure-level declaration \nonterminal{strdec} in any of the phrases
-\[ \texttt{let}\ \nonterminal{strdec}\ \texttt{in}\ \cdots\ \texttt{end} \]
-\[ \texttt{local}\ \nonterminal{strdec}\ \texttt{in}\ \cdots\ \texttt{end} \]
+\[ \texttt{let}\ \nonterminal{strdec}\ \texttt{in}\ \syndots\ \texttt{end} \]
+\[ \texttt{local}\ \nonterminal{strdec}\ \texttt{in}\ \syndots\ \texttt{end} \]
 \[ \texttt{struct}\ \nonterminal{strdec}\ \texttt{end} \]
 then the scope of \nonterminal{dir} does not extend beyond the phrase.
 
@@ -144,7 +144,7 @@ The syntax for specifications which appear in the body of a signature:
 &\alt& & empty\\
 &\alt& \nonterminal{spec}$_{1}$ \optional{\texttt{;}} \nonterminal{spec}$_{2}$ & sequential\\
 &\alt&\nonterminal{spec} \texttt{sharing type}
-\nonterminal{longtycon}$_{1}$ \texttt{=} $\cdots$ \texttt{=} \nonterminal{longtycon}$_{n}$
+\nonterminal{longtycon}$_{1}$ \texttt{=} $\syndots$ \texttt{=} \nonterminal{longtycon}$_{n}$
 & sharing ($n\geq2$)\\
 \phantomsection\label{grammar:valdesc}\nonterminal{valdesc} & $::=$ &
 \nonterminal{vid} \texttt{:} \nonterminal{ty} \optional{\texttt{and} \nonterminal{valdesc}} & \\
@@ -215,7 +215,7 @@ No \nonterminal{tyvarseq} may contain the same \nonterminal{tyvar} twice.
 \begin{clause}{Type variables in data constructor appear in type constructor}
 Any \nonterminal{tyvar} appearing on the right side of a
 \nonterminal{datdesc} of the form ``\nonterminal{tyvarseq}
-\nonterminal{tycon} \texttt{=} $\cdots$'' must occur in the
+\nonterminal{tycon} \texttt{=} $\syndots$'' must occur in the
 \nonterminal{tyvarseq}. Similarly, in signature expressions of the form
 ``\nonterminal{sigexp} \texttt{where type} \nonterminal{tyvarseq}
 \nonterminal{longtycon} \texttt{=} \nonterminal{ty}'', any
