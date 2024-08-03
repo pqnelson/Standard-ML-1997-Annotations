@@ -1,0 +1,29 @@
+\documentclass{book}
+
+\usepackage{macros}
+\input{notation}
+
+\title{Notes on the Standard ML Definition}
+\author{Alex Nelson}
+\date{August 1, 2024}
+\subjclass{68Q55, % Semantics in the theory of computing
+  68Q60, % Specification and verification (program logics, model checking, etc.)
+  03B70 % logic in computer science
+}
+
+\begin{document}
+\frontmatter
+\maketitle
+\makehalftitle
+\tableofcontents
+\mainmatter
+\include{tex/introduction}
+\include{tex/syntax-core}
+\include{tex/syntax-modules}
+\nocite{*}
+{\footnotesize
+\bibliographystyle{amsalpha}
+\bibliography{sml-defn}}
+\vfill%\eject
+\printsummary
+\end{document}

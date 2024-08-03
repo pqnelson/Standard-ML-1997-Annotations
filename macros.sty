@@ -1,0 +1,230 @@
+\ProvidesPackage{macros}[2024/07/24 Random macros for my annotations on Standard ML]
+\newif\ifscreen\screentrue
+
+% If you are going to print out these notes onto paper, and you can
+% print two-sided, then pass the [print] option.
+\DeclareOption{print}{
+  \screenfalse
+}
+% The default option is that we are viewing it on the screen. For
+% completeness, [screen] option is provided, but it does nothing.
+\DeclareOption{screen}{
+  \screentrue
+}
+
+\ProcessOptions\relax
+
+% when the default font is 10pt
+\let\eightpoint\footnotesize
+\let\ninepoint\small
+
+
+
+\RequirePackage{longtable}
+% https://tex.stackexchange.com/a/5686/14751
+\setlength{\LTpre}{\smallskipamount}
+\setlength{\LTpost}{\smallskipamount}
+\usepackage{proof}
+\RequirePackage{amsmath,amssymb}
+\usepackage{xcolor}
+\RequirePackage[notlot,notlof]{tocbibind}
+\RequirePackage[useregional,en-US]{datetime2}
+\DTMlangsetup[en-US]{zone=pacific,mapzone=true}
+\RequirePackage{etoolbox}
+\RequirePackage{amsthm}
+\RequirePackage{enumitem}
+\ifscreen
+\usepackage[textwidth=29pc,% amsbook uses 30pc,
+  % knuth uses 29pc for TAOCP
+  textheight=54pc, % amsbook uses 50.5pc, taocp uses 45pc
+  top=6pc, % outer = 51 - 29 - 6 = 16
+  marginpar=12pc,
+  marginparsep=1pc,
+  left=6pc, % 1.25in for 3-ring binders
+  asymmetric
+]{geometry}
+\else
+\usepackage[textwidth=29pc,% amsbook uses 30pc,
+  % knuth uses 29pc for TAOCP
+  textheight=54pc, % amsbook uses 50.5pc, taocp uses 45pc
+  top=6pc, % outer = 51 - 29 - 6 = 16
+  marginpar=12pc,
+  marginparsep=1pc,
+  inner=6pc, % 1.25in for 3-ring binders
+]{geometry}
+\fi
+% https://tex.stackexchange.com/a/51883/14751
+\allowdisplaybreaks
+
+\RequirePackage{ifpdf}
+\RequirePackage[\ifpdf\else dvipdfmx\fi,
+pagebackref=true]{hyperref}
+% eTeX uses this color for links, it's better than BrickRed imho
+\definecolor{linkRed}{cmyk}{0.28, 1, 1, 0.35}
+\hypersetup{colorlinks=true,
+    linkcolor=linkRed,
+    citecolor=linkRed,
+    filecolor=linkRed,
+    urlcolor=linkRed,
+    breaklinks
+}
+
+%% ArXiV links
+\def\arXiv{\@ifnextchar[{\@arXivWith}{\@arXivWithout}}
+\def\@arXivWith[#1]#2{\texttt{\href{http://arxiv.org/abs/#2}{arXiv:#2} [#1]}}
+\def\@arXivWithout#1{\texttt{\href{http://arxiv.org/abs/#1}{arXiv:#1}}}
+
+
+%% Theorems
+\RequirePackage{thms}
+
+% alphabetically present the theorems, remarks being defined
+\newremark{axiom}{Axiom}
+\newremark{clause}{Clause}
+\newremark{comment}{Comment}
+\newremark{convention}{Convention}
+\newremark{definition}{Definition}
+\newremark{deviation}{Deviation}
+\newremark{example}{Example}
+\newremark{grammar}{Grammar}
+\newtheorem{proposition}{Proposition}
+\newtheorem{puzzle}{Puzzle}
+\newremark{remark}{Remark}
+\newremark{sml-rule}{Rule}
+\newtheorem{schema}{Schema}
+\let\scheme\schema
+\let\endscheme\endschema
+\newtheorem{theorem}{Theorem}
+
+% have a "list of puzzles"-like table of contents
+\def\puzzlecontentsname{List of Puzzles}
+% For the book.cls, this is what we have
+\def\listofpuzzles{%
+  \let\og@l@chapter\l@chapter
+  \def\l@chapter##1##2{\ifnum \c@tocdepth >\m@ne \addpenalty {-\@highpenalty }\vskip 0.125em \@plus \p@ \setlength \@tempdima {1.5em}\begingroup \parindent \z@ \rightskip \@pnumwidth \parfillskip -\@pnumwidth \leavevmode% \bfseries 
+\advance \leftskip \@tempdima \hskip -\leftskip ##1\nobreak \hfil \nobreak \hb@xt@ \@pnumwidth {\hss ##2\kern -\p@ \kern \p@ }\par \penalty \@highpenalty \endgroup \fi}
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse
+    \fi
+    \chapter*{\puzzlecontentsname\addcontentsline{toc}{chapter}{\puzzlecontentsname}
+        \@mkboth{%
+           \MakeUppercase\puzzlecontentsname}{\MakeUppercase\puzzlecontentsname}}%
+  \@starttoc{puzzle}%
+    \if@restonecol\twocolumn\fi
+}
+
+% Mostly based off of amsbook
+\setlist[enumerate]{label=(\arabic*),partopsep=0pt,itemsep=0pt,parsep=0pt,
+topsep=0pt, leftmargin=\parindent}
+
+
+% avoid resetting page number to 1
+\def\pagenumbering#1{\gdef \thepage {\csname @#1\endcsname \c@page }}
+
+% avoid resetting page number after title page, modified from book.cls
+\patchcmd{\titlepage}{\setcounter{page}\z@}{}{}{}
+
+
+%%% Customize sections to resemble TAOCP
+\parindent=19pt % taocpmac uses 19pt, amsbook uses 18pt, plain.tex uses 20pt
+\font\titlefont=cmssbx10 scaled\magstep2
+\def\starred{}
+\def\starit{\def\starred{\llap{*}}}
+% nobottomtitles will move sections at the end of a page to the top of
+% the next page
+\usepackage[nobottomtitles]{titlesec}
+\titleformat{\chapter}[display]
+            {\titlefont} % format
+            {\large\sffamily\spaceskip=10pt\MakeUppercase{\chaptertitlename} \thechapter} % label
+            {4pc} % sep 
+            {\filleft\MakeUppercase} % before
+\titleformat{name=\chapter,numberless}[display]
+            {\titlefont} % format
+            {} % label
+            {4pc} % sep
+            {\filleft} % before
+% Use the fact that a normal space is computed using font dimensions
+% see: https://tex.stackexchange.com/a/229642/14751
+\titleformat{\section}%[block]
+            {\bfseries\sffamily} % format
+            {\starred\thesection.\def\starred{}} % label
+            {2\fontdimen2\font plus\fontdimen3\font minus\fontdimen4\font} % sep
+            {\MakeUppercase} % before
+\titleformat{\subsection}%[block]
+            {\bfseries\sffamily} % format
+            {\starred\thesubsection.\def\starred{}} % label
+            {2\fontdimen2\font plus\fontdimen3\font minus\fontdimen4\font} % sep
+            {} % before
+\def\@addpunct#1{%
+  \relax\ifhmode
+    \ifnum\spacefactor>\@m \else#1\fi
+  \fi}
+\titleformat{\subsubsection}%[runin]
+            {\normalfont\bfseries\sffamily} % format
+            {\starred\thesubsubsection.\def\starred{}} % label
+            {2\fontdimen2\font plus\fontdimen3\font minus\fontdimen4\font}
+            %{0.5em} % sep = \enspace
+            {} % before
+            %[\@addpunct{.}]
+\newskip\xskipamount
+\xskipamount=7pt plus 3pt minus 4pt % taocpmac
+\titlespacing*{\chapter}{0pt}{0pt}{2pc plus 1 pc minus 1 pc}
+%\titlespacing*{\section}{0pt}{1cm plus 1pc minus 5pt}{\smallskipamount}
+\titlespacing*{\section}{0pt}{\bigskipamount}{\smallskipamount}
+\titlespacing*{\subsection}{0pt}{\bigskipamount}{\smallskipamount}
+\titlespacing*{\subsubsection}{0pt}{\bigskipamount}{\xskipamount\ignorespaces}
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+
+% This makes sure that the table of contents points to the right page
+% https://tex.stackexchange.com/a/443729/14751
+\newcommand{\sectionbreak}{\phantomsection}
+\newcommand{\subsectionbreak}{\phantomsection}
+\newcommand{\subsubsectionbreak}{\phantomsection}
+
+% When defining a new term in a "definition" environment
+\def\define#1{\textbf{``#1''}}
+
+\usepackage[git]{halftitle}
+
+%% More indexing stuff
+
+%% Index should point to the correct page
+% I don't know what I did, but I goofed implementing this badly the
+% first time...
+% https://tex.stackexchange.com/a/20910/14751
+\usepackage{imakeidx}
+
+\indexsetup{othercode=\footnotesize}
+
+\begin{filecontents*}{sml.ist}
+delim_0 ""
+\end{filecontents*}
+\makeindex[intoc, options=-s sml]
+
+\let\@Index\@index
+\patchcmd{\@Index}{\@wrindex}{\@Wrindex}{}{}
+\let\@Wrindex\@wrindex
+\patchcmd{\@Wrindex}{\thepage}{\theglobalnode}{}{}
+\let\xIndex\index
+\patchcmd{\xIndex}{\@index}{\@Index}{}{}
+\patchcmd{\xIndex}{\@index}{\@Index}{}{}
+\let\protected@iwrite\protected@write
+\patchcmd{\protected@iwrite}{\write}{\immediate\write}{}{}
+\patchcmd{\@Wrindex}{\protected@write}{\protected@iwrite}{}{}
+
+
+% BUG: this will not properly format bold section numbers, or underline
+% them, or do any fancy-pants stuff like that.
+\newcommand{\Index}[2][\relax]{\ifx#1\relax\xIndex{#2|transform}\else\xIndex[#1]{#2|transform}\fi}
+\let\index\Index
+\newif\if@index@second\@index@secondfalse
+\newcommand{\transform}[1]{\@index@secondfalse\forcsvlist\decodesec{#1}}
+\def\make@cursec@link#1#2{\hyperlink{globalnode.#1}{#2}}
+\newcommand{\decodesec}[1]{\if@index@second{, }\else\@index@secondtrue\fi%
+  \expandafter\make@cursec@link{#1}{\csname cursec#1\endcsname}}
+\def\hyperindexformat#1#2{#1{#2}}
+
+\endinput

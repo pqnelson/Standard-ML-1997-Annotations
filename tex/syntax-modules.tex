@@ -1,0 +1,259 @@
+\chapter{Syntax of Modules}
+
+\section{Reserved words}
+
+\begin{definition}{Reserved words}\label{defn:syntax-modules:reserved-words}
+The modules have additional reservewords, namely:
+\begin{verbatim}
+             eqtype    functor   include   sharing   sig
+             signature   struct   structure   where   :>
+\end{verbatim}
+\end{definition}
+
+\section{Identifiers}
+
+\begin{definition}{Functor identifier syntactic class FunId}
+The functor identifier syntactic class, denoted \FunId, consists of
+alphanumeric identifiers not starting with a prime.
+\end{definition}
+
+\begin{definition}{Signature Identifier syntactic class SigId}
+The signature identifier syntactic class, denoted \SigId, also consists
+of alphanumeric identifiers not starting with a prime.
+\end{definition}
+
+\begin{convention}{Disjointness of identifier classes}
+Henceforth, the Definition considers all identifier classes to be
+disjoint and discernible by grammatical rules.
+\end{convention}
+
+\section{Infixed Operators}
+
+\begin{clause}{Additional scoping rules}
+In addition to the rules governing the scope of infixed operators in the
+Core language~\zref{syntax-core:infixed-operator:scope}, there is a
+further scope limitation: if \nonterminal{dir} occurs in a
+structure-level declaration \nonterminal{strdec} in any of the phrases
+\[ \texttt{let}\ \nonterminal{strdec}\ \texttt{in}\ \cdots\ \texttt{end} \]
+\[ \texttt{local}\ \nonterminal{strdec}\ \texttt{in}\ \cdots\ \texttt{end} \]
+\[ \texttt{struct}\ \nonterminal{strdec}\ \texttt{end} \]
+then the scope of \nonterminal{dir} does not extend beyond the phrase.
+
+An immediate consequence: fixity is local to a basic structure
+expression (in particular, to such an expression occurring as a functor body).
+\end{clause}
+
+\section{Grammar for Modules}
+
+\begin{definition}{Syntactic classes for modules}
+The syntactic classes for modules, which the Definition calls
+\define{Module Phrase Classes}, consists of the following:
+\makeatletter{}
+\tabskip\@centering
+\halign to\textwidth
+{#\hfil\tabskip1em&#\hfil\tabskip\@centering\cr
+StrExp & structure expressions \cr
+StrDec & structure-level declarations \cr
+StrBind & structure bindings \cr
+\cr
+SigExp & signature expressions \cr
+SigDec & signature declarations \cr
+SigBind & signature bindings \cr
+\cr
+Spec & specifications \cr
+ValDesc & value descriptions\cr
+TypDesc & type descriptions\cr
+DatDesc & datatype descriptions\cr
+ConDesc & constructor descriptions\cr
+ExDesc & exception descriptions\cr
+StrDesc & structure descriptions\cr
+%\ adhocinsertion{\thetypabbr}{2mm}{WhereBind & where bindings\cr}
+%\adhocdeletion{\thetypabbr}{2mm}{SharEq & sharing equations\cr}
+\cr
+FunDec & functor declarations\cr
+FunBind & functor bindings\cr%% \adhocdeletion{\thenofuncspec}{3mm}{FunSigExp & functor signature expressions\cr
+%% FunSpec & functor specifications\cr
+%% FunDesc & functor descriptions\cr}
+TopDec  & top-level declarations\cr
+}
+\makeatother
+\end{definition}
+
+\section{Grammar for Modules}
+
+\begin{grammar}{Structures}
+  The syntax for structures is fairly straightforward. Note that
+  the rule for structure declarations \nonterminal{strdec} includes the
+  rule for core declarations \nonterminal{dec}, which is particularly
+  important later on.
+\begin{longtable}{rcll}
+\phantomsection\label{grammar:strexp}\nonterminal{strexp} & $::=$ & \texttt{struct} \nonterminal{strdec} \texttt{end}
+& basic\\
+& \alt & \nonterminal{longstrid} & structure identifier\\
+&\alt& \nonterminal{strexp} \texttt{:} \hyperref[grammar:sigexp]{\nonterminal{sigexp}} & transparent constraint\\
+&\alt& \nonterminal{strexp} \texttt{:>} \hyperref[grammar:sigexp]{\nonterminal{sigexp}} & opaque constraint\\
+&\alt& \nonterminal{funid}\texttt{(}\nonterminal{strexp}\texttt{)} & functor application\\
+&\alt&\texttt{let} \nonterminal{strdec} \texttt{in} \nonterminal{strexp} \texttt{end} & local declaration\\
+\phantomsection\label{grammar:strdec}\nonterminal{strdec} & $::=$ & \hyperref[grammar:dec]{\nonterminal{dec}}
+& declaration\\
+&\alt&\texttt{let} \texttt{structure} \nonterminal{strbind} & structure\\
+&\alt&\texttt{local} \nonterminal{strdec}$_{1}$ \texttt{in} \nonterminal{strdec}$_{2}$ \texttt{end} & local declaration\\
+&\alt& & empty\\
+&\alt&\nonterminal{strdec}$_{1}$ \optional{\texttt{;}} \nonterminal{strdec}$_{2}$ & sequential\\
+\phantomsection\label{grammar:strbind}\nonterminal{strbind} & $::=$ & \nonterminal{strid} \texttt{=} \nonterminal{strexp} \optional{\texttt{and} \nonterminal{strbind}} & \\
+\end{longtable}
+\end{grammar}
+
+\begin{remark}{Ambiguous grammar for \nonterminal{strdec}}
+Rossberg~\cite{rossbert2018defects} notes that the production rule for
+sequential structure declarations ``\nonterminal{strdec}$_{1}$ \optional{\texttt{;}} \nonterminal{strdec}$_{2}$''
+is ambiguous. Is it left-associative or right-associative?
+
+I'd advocate for making it right recursive, so we could write a simple
+recursive descent parser for Standard ML.
+\end{remark}
+
+\begin{grammar}{Signatures}
+The syntax for signatures:
+\begin{longtable}{rcll}
+\phantomsection\label{grammar:sigexp}\nonterminal{sigexp} & $::=$ & \texttt{sig} \nonterminal{spec} \texttt{end} & basic\\
+  &\alt& \nonterminal{sigid} & signature identifier\\
+&\alt&\nonterminal{sigexp} \texttt{where type} \nonterminal{tyvarseq} \nonterminal{longtycon}
+\texttt{=} \nonterminal{ty} & type realisation\\
+\phantomsection\label{grammar:sigdec}\nonterminal{sigdec} & $::=$ & \texttt{signature} \nonterminal{sigbind} & \\
+\phantomsection\label{grammar:sigbind}\nonterminal{sigbind} & $::=$
+& \nonterminal{sigid} \texttt{=} \nonterminal{sigexp}
+\optional{\texttt{and} \nonterminal{sigbind}} & \\
+\end{longtable}
+\end{grammar}
+
+\begin{grammar}{Specifications}
+The syntax for specifications which appear in the body of a signature:
+\begin{longtable}{rcll}
+%\phantomsection\label{grammar:}\nonterminal{} & $::=$ & &
+\phantomsection\label{grammar:spec}\nonterminal{spec} & $::=$ &
+\texttt{val} \nonterminal{valdesc} & value\\
+&\alt&\texttt{type} \nonterminal{typdesc} & type\\
+&\alt&\texttt{eqtype} \nonterminal{typdesc} & equality type\\
+&\alt&\texttt{datatype} \nonterminal{datdesc} & datatype\\
+&\alt&\texttt{datatype} \nonterminal{tycon} \texttt{-=-}
+\texttt{datatype} \nonterminal{longtycon} & replication\\
+&\alt& \texttt{exception} \nonterminal{exdesc} & exception\\
+&\alt& \texttt{structure} \nonterminal{strdesc} & structure\\
+&\alt& \texttt{include} \nonterminal{sigexp} & include\\
+&\alt& & empty\\
+&\alt& \nonterminal{spec}$_{1}$ \optional{\texttt{;}} \nonterminal{spec}$_{2}$ & sequential\\
+&\alt&\nonterminal{spec} \texttt{sharing type}
+\nonterminal{longtycon}$_{1}$ \texttt{=} $\cdots$ \texttt{=} \nonterminal{longtycon}$_{n}$
+& sharing ($n\geq2$)\\
+\phantomsection\label{grammar:valdesc}\nonterminal{valdesc} & $::=$ &
+\nonterminal{vid} \texttt{:} \nonterminal{ty} \optional{\texttt{and} \nonterminal{valdesc}} & \\
+\phantomsection\label{grammar:typdesc}\nonterminal{typdesc} & $::=$ &
+\nonterminal{tyvarseq} \nonterminal{tycon} \optional{\texttt{and} \nonterminal{typdesc}} & \\
+\phantomsection\label{grammar:datdesc}\nonterminal{datdesc} & $::=$ & \nonterminal{tyvarseq} \nonterminal{tycon} \texttt{=} \nonterminal{condesc} \optional{\texttt{and} \nonterminal{datdesc}} & \\
+\phantomsection\label{grammar:condesc}\nonterminal{condesc} & $::=$ & \nonterminal{vid} \optional{\texttt{of} \nonterminal{ty}} \optional{\texttt{\char`\|} \nonterminal{condesc}} & \\
+\phantomsection\label{grammar:exdesc}\nonterminal{exdesc} & $::=$ & \nonterminal{vid} \optional{\texttt{of} \nonterminal{ty}}
+\optional{\texttt{\char`\|} \nonterminal{exdesc}} & \\
+\phantomsection\label{grammar:strdesc}\nonterminal{strdesc} & $::=$ & \nonterminal{strid} \texttt{:} \nonterminal{sigexp} \optional{\texttt{and} \nonterminal{strdesc}} & \\
+\end{longtable}
+\end{grammar}
+
+\begin{grammar}{Functor declarations}
+The syntax for declaring a functor reuses the syntax for structure
+expressions. Also observe that it is impossible to have a functor with
+$0$ arguments, or with $n>1$ arguments.
+\begin{longtable}{rcll}
+%\phantomsection\label{grammar:}\nonterminal{} & $::=$ & & \\
+\phantomsection\label{grammar:fundec}\nonterminal{fund} & $::=$ & \texttt{functor} \nonterminal{funbind} & \\
+\phantomsection\label{grammar:funbind}\nonterminal{funbind} & $::=$ &
+\nonterminal{funid} \texttt{(}\nonterminal{strid} \texttt{:} \nonterminal{sigexp}\texttt{)} \texttt{=} \hyperref[grammar:strexp]{\nonterminal{strexp}}
+\optional{\texttt{and} \nonterminal{funbind}}
+& functor binding\\
+\end{longtable}
+\end{grammar}
+
+\begin{grammar}{Top-level declarations}
+The syntax for top-level declarations (which forms the basis of a
+program) consists of a sequence of one or more structure declarations
+[remember: core-language declarations are swept into structure declarations],
+signature declarations, and/or functor declarations:
+\begin{longtable}{rcll}
+%\phantomsection\label{grammar:}\nonterminal{} & $::=$ & & \\
+  \phantomsection\label{grammar:topdec}\nonterminal{topdec} & $::=$ &
+\hyperref[grammar:strdec]{\nonterminal{strdec}} \optional{\nonterminal{topdec}} & structure-level declaration \\
+&\alt& \hyperref[grammar:sigdec]{\nonterminal{sigdec}} \optional{\nonterminal{topdec}} & signature declaration \\
+&\alt& \hyperref[grammar:fundec]{\nonterminal{fundec}} \optional{\nonterminal{topdec}} & functor declaration \\
+\end{longtable}
+\end{grammar}
+
+\section{Syntactic Restrictions}
+
+\begin{clause}{No rebinding the same identifier in simultaneous declarations}
+No binding \nonterminal{strbind}, \nonterminal{sigbind}, or
+\nonterminal{funbind} may bind the same identifier twice.
+The Definition means by this, if we have something like 
+``\texttt{functor foo(arg1 : sig1) = ... and foo(arg2 : sig2) = ...}''
+then we have both functor declarations use the same identifier
+``\texttt{foo}''.
+
+However, our deviation~\zref{deviation:no-redefinitions} already imposes
+a stronger constraint.
+\end{clause}
+
+\begin{clause}{Specifications cannot reuse identifiers}
+No description \nonterminal{valdesc}, \nonterminal{typdesc},
+\nonterminal{datdesc}, \nonterminal{exdesc}, or \nonterminal{strdesc}
+may describe the same identifier twice. This also applies to value
+identifiers within a \nonterminal{datdesc}. (Again, we're imposing a
+stronger constraint\dots)
+\end{clause}
+
+\begin{clause}{Type variables must be distinct}
+No \nonterminal{tyvarseq} may contain the same \nonterminal{tyvar} twice.
+\end{clause}
+
+\begin{clause}{Type variables in data constructor appear in type constructor}
+Any \nonterminal{tyvar} appearing on the right side of a
+\nonterminal{datdesc} of the form ``\nonterminal{tyvarseq}
+\nonterminal{tycon} \texttt{=} $\cdots$'' must occur in the
+\nonterminal{tyvarseq}. Similarly, in signature expressions of the form
+``\nonterminal{sigexp} \texttt{where type} \nonterminal{tyvarseq}
+\nonterminal{longtycon} \texttt{=} \nonterminal{ty}'', any
+\nonterminal{tyvar} occurring in \nonterminal{ty} must occur in \nonterminal{tyvarseq}. 
+\end{clause}
+
+\begin{clause}{Specification identifiers are not reserved words}
+No \nonterminal{datdesc}, \nonterminal{valdesc}, or \nonterminal{exdesc}
+``may describe'' [whatever that means] \texttt{true}, \texttt{false},
+\texttt{nil}, \texttt{::}, or \texttt{ref}.
+
+Further, no \nonterminal{datdesc} or \nonterminal{exdesc} ``may describe''
+\texttt{it}. 
+\end{clause}
+
+\begin{comment}{Constraining our deviation}
+So our deviation~\zref{deviation:no-redefinitions} from the ``full''
+language imposed the constraint that redefinitions are illegal, but we
+can ``shadow'' an identifier if it is inside a structure. We see
+that the Definition further limits the possible identifiers we can
+shadow \emph{in general}.
+\end{comment}
+
+\begin{clause}{Top declaration restriction}
+No \nonterminal{topdec} may contain, as an initial segment, a
+\nonterminal{strdec} followed by a semicolon.
+\end{clause}
+
+\begin{comment}{Semicolons treated worse than a dead dog}
+It seems to me that semicolons are being treated worse than a dead dog,
+and it might actually improve the language if every statement and
+declaration had to end with a semicolons. Or if semicolons were banned
+altogether. It's got to be one or the other, because right now it's this
+muddied middle-of-the-road strategy (which is a great way to get hit by
+a car).
+\end{comment}
+
+\begin{comment}{References on Standard ML syntax}
+Scott and Jonstone~\cite{scott2023analysing} have re-examined Standard
+ML's syntax using modern lexical tools.
+\end{comment}

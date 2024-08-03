@@ -1,0 +1,630 @@
+\chapter{Syntax of the Core}
+
+\section{Reserved words}
+
+\begin{definition}{Reserved words}\label{defn:reserved-words}
+We are told the following are reserved words in the Core and may not be
+used as identifiers (except for ``\texttt{=}''):
+\vspace*{-6pt}
+\begin{verbatim}
+     abstype   and   andalso   as   case   datatype  do    else
+     end    exception    fn    fun    handle    if   in   infix
+     infixr   let     local    nonfix   of   op   open   orelse
+     raise   rec   then   type   val   with   withtype    while
+     (  )   [  ]   {  }  ,  :  ;  ...    _   |  =   =>   ->   #   
+\end{verbatim}
+\end{definition}
+
+\begin{remark}{Ambiguity about reserved words}
+Kahrs~\cite{kahrs1993mistakes} points out that there is ambiguity in the
+notion of ``reserved words'', since there are reserved words \emph{in
+the Core} and reserved words \emph{in Modules}. The Definition is not
+clear with what it means by the term (at least, it is not clear to me).
+
+I interpret ``reserved words'' to refer to those appearing \emph{either}
+in Core (listed above) \emph{or} in Modules~\zref{defn:syntax-modules:reserved-words}.
+\end{remark}
+
+\section{Special Constants}\label{sec:ch2:special-constant}
+
+\begin{definition}{Integer constant}
+An \define{Integer constant} in decimal notation is ``an optional
+negation symbol (\tttilde) followed by a non-empty sequence of decimal
+digits \texttt{0}, \dots, \texttt{9}.'' Similarly, in hexadecimal
+notation, an integer constant is an optional negation symbol followed by
+\texttt{0x} followed by a non-empty sequence of hexadecimal digits
+\texttt{0}, \dots, \texttt{9} and \texttt{a}, \dots, \texttt{f} (with
+\texttt{A}, \dots, \texttt{F} also allowed).
+\end{definition}
+
+\begin{definition}{Word constant}
+A \define{Word constant} in decimal notation is \texttt{0w} followed by
+a nonempty sequence of decimal digits, and in hexadecimal notation
+\texttt{0wx} followed by a non-empty sequence of hexadecimal digits.
+\end{definition}
+
+\begin{definition}{Real constant}
+A \define{Real Constant} is an integer constant in decimal notation,
+possibly followed by a point (\texttt{.}) and one or more decimal
+digits, possibly followed by an exponent symbol (\texttt{E} or
+\texttt{e}) and an integer constant in decimal notation; at least one of
+these optional parts must occur, therefore no integer constant is a real
+constant. 
+\end{definition}
+
+\begin{clause}{Assumption on the character set}
+The Standard assumes an underlying alphabet of $N\geq256$ characters
+numbered $0$ to $N-1$, which agrees with the ASCII character set on the
+characters numbered $0$ to $127$.
+\end{clause}
+
+\begin{definition}{Ordinal range}
+The \define{Ordinal range} of the alphabet is the closed interval $[0,N-1]$.
+\end{definition}
+
+\begin{definition}{String constant}
+A \define{String constant} is a sequence, between quotation marks (\texttt{"})
+of zero or more printable characters (i.e., numbered 33--126), spaces,
+or escape sequences.
+
+Each escape sequence starts with the character ``\verb+\+'' and stands
+for a character sequence. The escape sequences are:
+\halign{\indent#\hfil&\quad\parbox[t]{23pc}{\strut#\strut}\cr
+\verb+\a+   & A single character interpreted by the system as alert (ASCII~7)\cr
+\verb+\b+   & Backspace (ASCII 8)\cr
+\verb+\t+   & Horizontal tab (ASCII 9)\cr
+\verb+\n+   & Linefeed, also known as newline (ASCII 10)\cr
+\verb+\v+   & Vertical tab (ASCII 11)\cr
+\verb+\f+   & Form feed (ASCII 12)\cr
+\verb+\r+   & Carriage return (ASCII 13)\cr
+\verb+\^+$c$  & The control character $c$, where $c$ may
+                be any character with number 64--95. The number
+                of ~{\tt\char'134\char'136}$c$~ is 64 less than the 
+                number of $c$.\cr
+\verb+\+$ddd$ & The single character with number $ddd$ (3 decimal digits
+denoting an integer in the ordinal range of the alphabet).\cr
+\uconst & The single character with number $xxxx$ (4 hexadecimal digits
+denoting an integer in the ordinal range of the alphabet).\cr
+\verb+\"+   & {\tt "}\cr
+\verb+\\+   & {\tt\char'134}\cr
+\verb+\+$f\cdot\cdot f$\verb+\+
+            & This sequence is ignored,
+              where $f\cdot\cdot f$ stands for a sequence 
+             of one or more formatting characters.\cr
+}
+\end{definition}
+
+\begin{definition}{Formatting characters}\label{defn:syntax-core:formatting-characters}
+The \define{Formatting Characters} are a subset of the non-printable
+characters including at least space, tab, newline, and formfeed. The
+formfeed allows long strings to be written on more than one line, by
+writing ``~\verb+\+~`` at the end of one line and at the start of the next.
+\end{definition}
+
+\begin{definition}{Character constants}
+A \define{Character constant} is a sequence of the form
+\texttt{\#}$s$, where $s$ is a string constant denoting a string of
+size one character.
+\end{definition}
+
+\begin{definition}{Special Constants}
+The Definition denotes by {\SCon} the class of \define{Special Constants},
+i.e., the integer, real, word, character, and string constants. The
+definition uses {\scon} to range over \SCon.
+\end{definition}
+
+\section{Comments}
+
+\begin{definition}{Comment}\label{defn:syntax-core:comment}
+A \define{Comment} is any character sequence within comment brackets
+``\texttt{(*}'' and ``\texttt{*)}'' in which comment brackets are
+properly nested.
+\end{definition}
+
+\begin{clause}{Space illegal in comment brackets}
+No space is allowed between the two characters which make up a comment
+bracket --- i.e., no space is allowed in ``\texttt{(*}'' nor in
+``\texttt{*)}'' if we want them to be comment brackets.
+\end{clause}
+
+\begin{clause}{Unterminated comments}
+An unmatched ``\texttt{(*}'' should be detected by the compiler.
+\end{clause}
+
+\section{Identifiers}
+
+\begin{definition}{Long identifiers, metavariable ``longx'' ranges over ``longX''}\label{defn:ch2:long-identifier}
+For each syntactic class X marked as ``long'', there is a class
+``longX'' of \define{Long Identifiers}. If \nonterminal{x} ranges over X, then
+\nonterminal{longx} ranges over longX. The syntax of these long identifiers is given
+by:
+\begin{longtable}{rcl}
+\nonterminal{longx} & $::=$ & \nonterminal{x} \\
+& \alt & \nonterminal{strid${}_{1}$}\texttt{.}$\cdots$\texttt{.}\nonterminal{strid${}_{n}$}\texttt{.}\nonterminal{x}\\
+& & ($n\geq1$)
+\end{longtable}
+\noindent for an identifier and a long identifier, respectively.
+
+The qualified identifiers link the Core and Modules.
+\end{definition}
+
+\begin{clause}{Classes of identifiers}
+There are five classes of identifiers:
+\begin{enumerate}
+\item Value Identifiers (long) --- \VId
+\item Type Variables --- \TyVar
+\item Type Constructors (long) --- \TyCon
+\item Lab (record labels) --- \Lab
+\item Structure Identifiers (long) --- \StrId
+\end{enumerate}
+\end{clause}
+
+\begin{definition}{Valid identifiers}
+An identifier is either:
+\begin{enumerate}
+\item an \define{Alphanumeric identifier} consisting of
+any sequence of letters, digits, primes (\verb#'#), and underbars
+(\verb#_#) starting with a letter or a prime; or
+\item a \define{Symbolic identifier} consisting of any nonempty sequence
+  of the following symbols: 
+\vspace*{-6pt}
+\begin{center}
+%\verb(!  %  &  $  +  -  /  :  <  =  >  ?  (@\verb(  \  ~  `  ^  |  *(
+\verb(!  %  &  $  #  +  -  /  :  <  =  >  ?  @  \  ~  `  ^  |  *(
+\end{center}
+\end{enumerate}
+In both cases, reserved words are excluded.
+\end{definition}
+
+\begin{deviation}{Equality is not a valid identifier}
+We will consciously deviate from the Definition and, consistent with our
+choices made earlier, insist that ``\texttt{=}'' is not a valid symbolic
+identifier. This deviates from the Definition, but it simplifies our
+life formalizing the Definition.
+\end{deviation}
+
+\begin{definition}{Type Variables}
+A \define{Type Variable} may be any alphanumeric identifier starting
+with a prime. The class of type variables is denoted ``{\TyVar}''.
+\end{definition}
+
+\begin{definition}{Subclass of equality type variables}
+The subclass of \define{Equality Type Variables} ETyVar of {\TyVar}
+consists of those which start with two or more primes.
+\end{definition}
+
+\begin{convention}{VId, TyCon, Lab do not start with primes}
+The convention therefore is that the classes \VId, \TyCon, and \Lab\ do
+not start with primes.
+
+Also, ``\texttt{*}'' is excluded from {\TyCon} to avoid confusion with
+derived form of tuple types.
+\end{convention}
+
+\begin{definition}{Record labels and numeric labels}\label{defn:record-and-numeric-labels}
+The syntactic class of \define{Record Labels}, denoted {\Lab}, is
+the alphanumeric identifiers not starting with a prime, extended to
+include the \define{Numeric Labels} \texttt{1}, \texttt{2}, \texttt{3},
+and so on (i.e., any numeral not starting with \texttt{0}).
+(This is so tuples can be syntactic sugar as a derived type.)
+\end{definition}
+
+\begin{definition}{Structure identifiers}
+The identifier class of \define{Structure Identifiers}, denoted \StrId,
+is represented by alphanumeric identifiers not starting with a prime.
+\end{definition}
+
+\begin{clause}{Determining class of identifier}
+The class of type variables is disjoint from the other four classes. But
+determining the class of an identifier \textit{id} in a Core phrase is
+determined thus:
+\begin{enumerate}
+\item Immediately before ``\texttt{.}'' --- i.e., in a long identifier
+  --- or in an \texttt{open} declaration, \textit{id} is a structure
+  identifier. The rest of the cases assumes \textit{id} is not a structure identifier.
+\item At the start of a component in a record type, record pattern, or
+  record expression, \textit{id} is a record label.
+\item Elsewhere in types, \textit{id} is a type constructor.
+\item Elsewhere, \textit{id} is a value identifier.
+\end{enumerate}
+\end{clause}
+
+\section{Lexical Analysis}
+
+\begin{clause}{Items of analysis}
+Each item of lexical analysis is either a reserved word
+\zref{defn:reserved-words},
+a numeric label~\zref{defn:record-and-numeric-labels}, 
+a special constant (Sec~\ref{sec:ch2:special-constant}),
+or a long identifier~\zref{defn:ch2:long-identifier}.
+(Remember, an identifier \emph{is} a subclass of long identifiers.)
+\end{clause}
+
+\begin{clause}{Comments and formatting characters}
+Comments~\zref{defn:syntax-core:comment} and formatting
+characters~\zref{defn:syntax-core:formatting-characters} are separate
+items (except, of course, within string constants) and are otherwise ignored.
+\end{clause}
+
+\begin{clause}{Longest next item is always taken}
+At each stage, the longest next item is always taken.
+\end{clause}
+
+\section{Infixed operators}
+
+\begin{definition}{Infix status and infixed operators}
+An identifier may be given \define{Infix Status} by the \texttt{infix}
+or \texttt{infixr} directive, which may occur as a declaration.
+This status only pertains to its use as a \nonterminal{\vid} within the scope of the
+directive, and in these uses it is called an \define{Infixed Operator}.
+\end{definition}
+
+\begin{clause}{Qualified identifiers never infixed}
+Qualified identifiers \textbf{never} have infix status. The
+Definition is very explicit about this.
+\end{clause}
+
+\begin{example}{Infixed operator}
+If \nonterminal{\vid} has infix status, then ``$exp_{1}$
+\nonterminal{\vid} $exp_{2}$'' (resp., 
+``$pat_{1}$ \nonterminal{\vid} $pat_{2}$'') may occur --- possibly in parentheses ---
+wherever the application ``\nonterminal{\vid}\verb+{+{\tt 1=}$\exp_{1}$\verb+,+{\tt
+2=}$\exp_{2}$\verb+}+'' or its derived form ``\nonterminal{\vid}\verb+(+$exp_{1}$\verb+,+$exp_{2}$\verb+)+'' (resp.,
+``\nonterminal{\vid}\verb+(+$pat_{1}$\verb+,+$pat_{2}$\verb+)+'') would otherwise
+occur.
+\end{example}
+
+\begin{clause}{Op-prefix treats identifier as non-infixed}
+An occurrence of \emph{any} long identifier (qualified or not) prefixed
+by ``\texttt{op}'' is treated as non-infixed.
+
+The only required use of an ``\texttt{op}'' is in prefixing a
+non-infixed occurrence of an identifier \nonterminal{\vid} which has infix
+status. Elsewhere ``\texttt{op}'', where permitted, has no effect.
+\end{clause}
+
+\begin{definition}{Nonfix directive}
+Infix status is cancelled by the \texttt{nonfix} directive.
+\end{definition}
+
+\begin{definition}{Fixity directives}
+The keywords ``\texttt{infix}'', ``\texttt{infixr}'', and ``\texttt{nonfix}''
+are collectively referred to as \define{Fixity Directives}.
+\end{definition}
+
+\begin{clause}{Syntax of fixity directives}
+For $n\geq1$, we have the syntax for fixity directives look like:
+\[\mathtt{infix}~\langle d\rangle~vid_{1}\cdots vid_{n}\]
+\[\mathtt{infixr}~\langle d\rangle~vid_{1}\cdots vid_{n}\]
+\[\mathtt{nonfix}~vid_{1}\cdots vid_{n}\]
+where $\langle d\rangle$ is an optional decimal digit $d$ indicating
+binding precedence. A higher value of $d$ indicates tighter binding; the
+default is \texttt{0}.
+\end{clause}
+
+\begin{comment}{Precedence must be between 0 and 9}
+Observe this part of the Definition explicit constrains the precedence
+for infixed operators must be between 0 and 9. In principle, there's no
+reason it cannot be something larger (say, representable as an unsigned
+byte or word --- i.e., between 0 and 256, or between 0 and
+$2^{64}\approx 18.4\times 10^{18}$).
+\end{comment}
+
+\begin{clause}{Associativity of infixed operators}
+Here ``\texttt{infix}'' dictates left associativity, ``\texttt{infixr}''
+dictates right associativity.
+
+The Definition requires in an expression of the form
+$exp_{1}~vid_{1}~exp_{2}~vid_{2}~exp_{3}$ where $vid_{1}$ and $vid_{2}$
+are infixed operators with the same precedence, either both must
+associate to the left or both must associate to the right.
+\end{clause}
+
+\begin{example}{Infixed operator associativity}
+Suppose ``\verb#<<#'' and ``\verb#>>#'' are infixed operators of equal
+precedence, but ``\verb#<<#'' is left-associative and ``\verb#>>#'' is
+right associative. Then
+\tabskip4cm
+\halign to\hsize{\indent\hfil{\tt #}\tabskip1em&\hfil#\hfil\ &\ {\tt #}\hfil\cr
+x << y << z&parses as&(x << y) << z\cr
+x >> y >> z&parses as&x >> (y >> z)\cr
+x << y >> z&is illegal\cr
+x >> y << z&is illegal\cr}
+\end{example}
+
+\begin{definition}{Scope of fixity directive}\label{syntax-core:infixed-operator:scope}
+The \define{Scope} of a fixity directive $dir$ is the ensuing program
+text, except if $dir$ occurs in a declaration $dec$ in either of the
+phrases
+\begin{equation*}
+\mathtt{let}~dec~\mathtt{in}~\cdots~\mathtt{end}
+\end{equation*}
+or
+\begin{equation*}
+\mathtt{local}~dec~\mathtt{in}~\cdots~\mathtt{end}
+\end{equation*}
+then the scope of $dir$ does not extend beyond these phrases. Further
+scope limitations are imposed for Modules.
+\end{definition}
+
+\begin{clause}{Do not appear in semantic rules}
+The Definition states: These directives and ``\texttt{op}'' are omitted
+from the semantic rules, since they only affect parsing.
+\end{clause}
+
+\section{Derived forms}
+
+\begin{clause}{Syntactic sugar atop the bare language}
+Many syntactic forms in Standard ML can be expressed in terms of a
+smaller number of syntactic forms which the Definition calls the
+\define{Bare} language. The derived forms and their equivalents are in
+Appendix A.
+\end{clause}
+
+\section{Grammar}
+
+\begin{convention}{Pseudo-EBNF syntax}
+The Definition uses an idiosyncratic EBNF-like syntax. The rules
+governing it:
+\begin{enumerate}
+\item The brackets \optional{\ } enclose optional phrases.
+\item For any syntax class X (over which \nonterminal{x} ranges) we can define the
+  class Xseq (over which \nonterminal{xseq} ranges) as follows:
+\begin{longtable}{rclcl}
+\nonterminal{xseq} & $::=$ & \nonterminal{x} & \quad & (singleton sequence)\\
+  & \alt & & & (empty sequence)\\
+  & \alt & \verb+(+$x_{1}$\verb+,+$\cdots$\verb+,+$x_{n}$\verb+)+ & & (sequence, $n\geq1$)
+\end{longtable}
+Here the ``$\cdots$'' used means syntactic iteration, which is distinct
+from (and must not be confused with) ``\dots'' which is a reserved
+keyword of the language.
+\item Alternative forms for each phrase class are in order of decreasing
+  precedence; this resolves ambiguity in parsing (or so the Definition
+  assures us, guiding us to Appendix B)
+\item L (resp., R) means left (resp., right) association
+\item Syntax of types binds more tightly than the syntax of expressions
+\item Each iterated construct (e.g., \nonterminal{match}, $\cdots$) extends as far
+  right as possible; therefore, in theory, parentheses may be needed
+  around an expression which terminates with a match (like ``\texttt{fn}
+  \nonterminal{match}'') if this occurs within a larger match. (I guess you could
+  say \emph{care must be taken if you play with matches}\dots)
+\end{enumerate}
+Unspoken rules:
+\begin{enumerate}[resume]
+\item ``nonterminals'' are italicized (\nonterminal{like so}), ``terminals''
+  are written in teletype (\texttt{like so}).
+\end{enumerate}
+\end{convention}
+
+\begin{comment}{``Match extends as far right as possible'' context-free?}
+I am not sure if this criteria ``extends as far right as possible'' is
+context-free, i.e., we might accidentally have a context-sensitive (or
+worse) grammar accidentally with this seemingly innocuous condition. 
+
+Scott, Johnstone, and Walsh~\cite{scott2023multiple} have written a
+paper about this sort of condition. It seems like it is innocent enough,
+but there may be difficulties or unintended complications with how the
+Definition uses it.
+\end{comment}
+
+\begin{definition}{Syntactic classes for Core}
+The syntactic classes for Core, which the Definition calls
+\define{Core Phrase Classes}, consists of the following:
+\makeatletter
+\tabskip\@centering
+\halign to\textwidth
+{#\hfil\tabskip1em&#\hfil\tabskip\@centering\cr
+AtExp   & atomic expressions \cr
+ExpRow  & expression rows \cr
+Exp     & expressions \cr
+Match   & matches \cr
+Mrule   & match rules \cr
+\noalign{\vspace{2mm}}
+%\cr
+Dec     & declarations \cr
+ValBind & value bindings \cr
+TypBind & type bindings \cr
+DatBind & datatype bindings \cr
+ConBind & constructor bindings \cr
+%version 1: Constrs & datatype constructions \cr
+ExBind  & exception bindings \cr
+\noalign{\vspace{2mm}}
+%\cr
+AtPat   & atomic patterns \cr
+PatRow  & pattern rows \cr
+Pat     & patterns \cr
+\noalign{\vspace{2mm}}
+%\cr
+Ty      & type expressions \cr
+TyRow   & type-expression rows \cr
+}
+\makeatother
+\noindent As usual, the convention is to use italicized lowercase names \nonterminal{x} for
+metavariables ranging over the syntactic class X.
+\end{definition}
+
+\begin{grammar}{Syntax for patterns}
+The syntax for patterns:
+\begin{longtable}{rcll}
+\phantomsection\label{grammar:atpat}\nonterminal{atpat} & $::=$ & \wildcard & wildcard\\
+& \alt & \nonterminal{scon} & special constant\\
+& \alt & \optional{\texttt{op}} \textit{longvid} & value identifier\\
+& \alt & \verb+{+ \optional{\textit{patrow}} \verb+}+ & record\\
+& \alt & \verb+{+ \textit{pat} \verb+}+ &\\
+\phantomsection\label{grammar:patrow}\nonterminal{patrow} & $::=$ & \dots & wildcard\\
+& \alt & \nonterminal{lab} \verb+=+ \nonterminal{pat} \optional{\texttt{\char`,} \nonterminal{patrow}} & pattern row\\
+\phantomsection\label{grammar:pat}\nonterminal{pat} & $::=$ & \nonterminal{atpat} & atomic\\
+& \alt & \optional{\texttt{op}} \textit{longvid} \nonterminal{atpat} & constructed pattern\\
+& \alt & $pat_{1}\;\;vid\;\;pat_{2}$ & infixed value construction\\
+& \alt & \nonterminal{pat} \texttt{:} \nonterminal{ty} & typed \\
+& \alt & \optional{\texttt{op}}\nonterminal{\vid}\optional{\texttt{:} \nonterminal{ty}} \texttt{as} \nonterminal{pat} & layered
+\end{longtable}
+\end{grammar}
+
+\begin{grammar}{Syntax for types}
+The syntax for types consists of the production rules:
+\begin{longtable}{rcll}
+\phantomsection\label{grammar:ty}\nonterminal{ty} & $::=$ & \nonterminal{tyvar} & type variable\\
+& \alt & \texttt{\char`\{} \optional{\textit{tyrow}} \texttt{\char`\}} & record type expression\\
+& \alt & \nonterminal{tyseq} \nonterminal{longtycon} & type construction\\
+& \alt & \nonterminal{ty} \texttt{->} \nonterminal{ty\/$'$} & function type expression (R)\\
+& \alt & \texttt{(} \nonterminal{ty} \texttt{)} & \\
+\phantomsection\label{grammar:tyrow}\nonterminal{tyrow} & $::=$ & \nonterminal{lab} \texttt{:} \nonterminal{ty} \optional{\texttt{\char`,} \nonterminal{tyrow}} & type-expression row\\
+\end{longtable}
+\end{grammar}
+
+\begin{grammar}{Expressions}
+Remember that ``special constants'' is what the Definition refers to
+``literal constants''.
+\begin{longtable}{rcll}
+\phantomsection\label{grammar:atexp}\nonterminal{atexp} & $::=$ & \nonterminal{scon} & special constant\\
+& \alt& \optional{\texttt{op}} \textit{longvid} & value identifier\\
+&\alt&\verb+{+ \optional{\textit{exprow}} \verb+}+ & record\\
+&\alt&\texttt{let} \hyperref[grammar:dec]{\nonterminal{dec}} \texttt{in} \nonterminal{exp} \texttt{end} & local declaration\\
+&\alt&\texttt{(} \nonterminal{exp} \texttt{)} & \\
+\phantomsection\label{grammar:exprow}\nonterminal{exprow} & $::=$ & \nonterminal{lab} \texttt{=} \nonterminal{exp} \optional{\texttt{\char`\,} \nonterminal{exprow}}
+& expression row\\
+\phantomsection\label{grammar:exp}\nonterminal{exp} & $::=$ & \nonterminal{atexp} & atomic\\
+&\alt& \nonterminal{exp} \nonterminal{atexp} & application (L)\\
+&\alt& $exp_{1}\;\;vid\;\;exp_{2}$ & infixed application\\
+&\alt& \nonterminal{exp} \texttt{:} \hyperref[grammar:ty]{\nonterminal{ty}} & typed (L)\\
+&\alt& \nonterminal{exp} \texttt{handle} \hyperref[grammar:match]{\nonterminal{match}} & handle exception\\
+&\alt&\texttt{raise} \nonterminal{exp} & raise exception\\
+&\alt&\texttt{fn} \hyperref[grammar:match]{\nonterminal{match}} & function\\
+\end{longtable}
+\end{grammar}
+
+\begin{grammar}{``Matches''}
+In \texttt{case}-expressions, and function declarations (and
+applications), we have pattern matching based on a set of rules. These
+are usually called ``matches''.
+\begin{longtable}{rcl}
+\phantomsection\label{grammar:match}\nonterminal{match} & $::=$ & \nonterminal{mrule} \optional{\texttt{\char`\|} \nonterminal{match}} \\
+\phantomsection\label{grammar:mrule}\nonterminal{mrule} & $::=$ & \hyperref[grammar:pat]{\nonterminal{pat}} \texttt{=>} \hyperref[grammar:exp]{\nonterminal{exp}}\\
+\end{longtable}
+\end{grammar}
+
+\begin{grammar}{Core declarations}
+This is the heart of what top-level programs look like, they're a
+sequence of declarations (of some sort).
+\begin{longtable}{rcll}
+\phantomsection\label{grammar:dec}\nonterminal{dec} & $::=$ & \texttt{val}
+\nonterminal{tyvarseq} \nonterminal{valbind} & value declaration\\
+&\alt&\texttt{type} \nonterminal{typbind} & type declaration\\
+&\alt&\texttt{datatype} \nonterminal{datbind} & datatype declaration\\
+&\alt&\texttt{datatype} \nonterminal{tycon} \texttt{-=-} \texttt{datatype} \nonterminal{longtycon}
+& datatype replication\\
+&\alt&\texttt{abstype} \nonterminal{datbind} \texttt{with} \nonterminal{dec} \texttt{end} &
+abstype declaration\\
+&\alt&\texttt{exception} \nonterminal{exbind} & exception declaration\\
+&\alt&\texttt{local} $dec_{1}$ \texttt{in} $dec_{2}$ \texttt{end} &
+local declaration\\
+&\alt&\texttt{open} $longstrid_{1}$ $\cdots$ $longstrid_{n}$ & open
+declaration ($n\geq1$)\\
+&\alt&&empty declaration\\
+&\alt&$dec_{1}$ \optional{\texttt{;}} $dec_{2}$ & sequential declarations\\
+&\alt&\texttt{infix} \optional{\textit{d}} $vid_{1}$ $\cdots$ $vid_{n}$
+&infix (L) directive\\
+&\alt&\texttt{infixr} \optional{\textit{d}} $vid_{1}$ $\cdots$ $vid_{n}$
+&infix (R) directive\\
+&\alt&\texttt{nonfix} \optional{\textit{d}} $vid_{1}$ $\cdots$ $vid_{n}$
+&nonfix directive\\
+%\phantomsection\label{grammar:}
+%% \end{longtable}
+%% \begin{longtable}{rcl}
+\phantomsection\label{grammar:valbind}\nonterminal{valbind} & $::=$ & \hyperref[grammar:pat]{\textit{pat}}
+\texttt{=} \hyperref[grammar:exp]{\textit{exp}} \optional{\texttt{and} \textit{valbind}}\\
+&\alt&\texttt{rec} \textit{valbind}\\
+\phantomsection\label{grammar:typbind}\nonterminal{typbind} & $::=$ &
+\textit{tyvarseq tycon} \texttt{=} \hyperref[grammar:ty]{\textit{ty}} \optional{\texttt{and} \textit{typbind}}\\
+\phantomsection\label{grammar:datbind}\nonterminal{datbind} & $::=$ &
+\textit{tyvarseq tycon} \texttt{=} \textit{conbind} \optional{\texttt{and} \textit{datbind}}\\
+\phantomsection\label{grammar:conbind}\nonterminal{conbind} & $::=$ &
+\optional{\texttt{op}}\textit{vid} \optional{\texttt{of} \hyperref[grammar:ty]{\textit{ty}}} \optional{\texttt{\char`\|} \textit{datbind}}\\
+\phantomsection\label{grammar:exbind}\nonterminal{exbind} & $::=$ &
+\optional{\texttt{op}}\textit{vid} \optional{\texttt{of} \hyperref[grammar:ty]{\textit{ty}}} \optional{\texttt{and} \textit{exbind}}\\ 
+&\alt&\optional{\texttt{op}}\textit{vid} \texttt{=} \optional{\texttt{op}} \textit{longvid} \optional{\texttt{and} \textit{exbind}}\\ 
+\end{longtable}
+\end{grammar}
+
+
+\begin{remark}{Ambiguous grammar for \nonterminal{dec}}
+Rossberg~\cite{rossbert2018defects} observes that the grammar given for
+\nonterminal{dec} is highly ambiguous. For example, combining the empty
+declaration \emph{and} sequencing allows the derivation of arbitrary
+sequences of empty declarations for \emph{any} input.
+
+A second ambiguity Rossberg points out is that a sequence of the form
+``\nonterminal{dec$_{1}$} \nonterminal{dec$_{2}$} \nonterminal{dec$_{3}$}''
+can be reduced in two ways to \nonterminal{dec}: either via
+``\nonterminal{dec$_{12}$} \nonterminal{dec$_{3}$}'' or via ``\nonterminal{dec$_{1}$} \nonterminal{dec$_{23}$}''.
+Rossberg cites Kahrs~\cite[\S8.3]{kahrs1993mistakes} for this second
+ambiguity, which Kahrs expands upon with several more severe ambiguities.
+\end{remark}
+
+\section{Syntactic restrictions}
+
+\begin{clause}{No repeated labels in records}
+No expression row, pattern row, or type-expression row may bind the same
+\nonterminal{lab} twice.
+\end{clause}
+
+\begin{clause}{Cannot bind same identifier twice}
+No binding \nonterminal{valbind}, \nonterminal{typbind}, \nonterminal{datbind}, or \nonterminal{exbind} may bind the
+same identifier twice. This applies also to value identifiers within a
+\nonterminal{datbind}. 
+\end{clause}
+
+\begin{clause}{Type variables sequence uniqueness}
+No \nonterminal{tyvarseq} may contain the same \nonterminal{tyvar} twice. So \verb|('a, 'b, 'a)|
+is illegal since \verb|'a| appears twice.
+\end{clause}
+
+\begin{clause}{\texttt{rec} restriction for derived function form}
+For each value binding ``\nonterminal{pat} \texttt{=} \nonterminal{exp}'' within \texttt{rec},
+\nonterminal{exp} must be of the form ``\texttt{fn} \nonterminal{match}''. The derived form of
+function-value binding given in Appendix A necessarily obeys this restriction.
+\end{clause}
+
+\begin{clause}{No binding primitive data constructors}
+No \nonterminal{datbind}, \nonterminal{valbind}, or \nonterminal{exbind} may bind \texttt{true},
+\texttt{false}, \texttt{nil}, \texttt{::}, or \texttt{ref}.
+\end{clause}
+
+\begin{clause}{No data or exception binding to \texttt{it}}
+No \nonterminal{datbind} or \nonterminal{exbind} may bind \texttt{it}.
+\end{clause}
+
+\begin{clause}{Real constants never appear in patterns}
+No real constant may occur in a pattern. (Really, unless you're a
+numerical analyst, you should be staying away from floating-point
+arithmetic altogether\dots)
+\end{clause}
+
+\begin{remark}{Problem stems from \texttt{real} is not equality type}
+The difficulty with the previous clause (real constants cannot appear in
+patterns) stems from \texttt{real} is not an equality type. This (real
+not being an equality type) has felt wrong to me, since the IEEE 754
+standard \emph{does} define equality for floating-point
+numbers.
+
+Moreover, it's the \emph{only} type which is not an equality
+type, and that causes serious complications --- it's the entire reason we
+need to distinguish ``equality types'' from ``non-equality types''! But
+if we allow equality for real constants, the only possible surprise is
+that \texttt{NaN} is never equal to anything else (i.e., we lose
+reflexivity). 
+\end{remark}
+
+\begin{clause}{Type variable restrictions in value declarations}
+In a value declaration ``\texttt{val} \nonterminal{tyvarseq} \nonterminal{valbind}'', if
+\nonterminal{valbind} contains another value declaration ``\texttt{val} \nonterminal{tyvarseq\/$'$}
+\nonterminal{valbind\/$'$}'', then \nonterminal{tyvarseq} and \nonterminal{tyvarseq\/$'$} must be disjoint.
+
+In other words, no type variable may be scoped by two value declarations
+of which one occurs inside the other.
+
+This restriction applies after \nonterminal{tyvarseq} and \nonterminal{tyvarseq\/$'$} have been
+extended to include implicitly scoped type variables (as explained in
+Section 4.6).
+\end{clause}

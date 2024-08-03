@@ -1,0 +1,57 @@
+% Knuth's styling
+\def\hair{\kern.05em\relax} % teeny tiny space
+
+% SML Definition
+\newcommand\nonterminal[1]{\textit{#1\/}}
+\def\alt{$\mid$}
+\newcommand\optional[1]{$\langle$#1$\rangle$}
+\newcommand{\wildcard}{\kern0.06em \vbox{\hrule width.5em}} % lhs2TeX.sty
+\newcommand{\tttilde}{\mbox{\tt\char'176}}
+\newcommand\uconst{\mbox{\tt\char'134u$xxxx$}}
+          % Identifier class names
+\newcommand{\VId}{{\rm VId}}
+\newcommand{\Var}{{\rm Var}}
+\newcommand{\Con}{{\rm Con}}
+\newcommand{\SCon}{{\rm SCon}}
+\newcommand{\Exn}{{\rm ExCon}}
+\newcommand{\TyVar}{{\rm TyVar}}
+\newcommand{\ImpTyVar}{{\rm ImpTyVar}}
+\newcommand{\AppTyVar}{{\rm AppTyVar}}
+\newcommand{\TyCon}{{\rm TyCon}}
+\newcommand{\Lab}{{\rm Lab}}
+\newcommand{\StrId}{{\rm StrId}}
+\newcommand{\FunId}{{\rm FunId}}
+\newcommand{\SigId}{{\rm SigId}}
+          % Identifier class variables
+\newcommand{\id}{\nonterminal{id}}
+\newcommand{\vid}{\nonterminal{vid}}
+\newcommand{\var}{\nonterminal{var}}
+\newcommand{\con}{\nonterminal{con}}
+\newcommand{\scon}{\nonterminal{scon}}
+\newcommand{\exn}{\nonterminal{excon}}
+\newcommand{\tyvar}{\nonterminal{tyvar}}
+\newcommand{\atyvar}{\mbox{\tt \ttprime a}}
+\newcommand{\btyvar}{\mbox{\tt \ttprime b}}
+\newcommand{\ctyvar}{\mbox{\tt \ttprime c}}
+\newcommand{\aityvar}{\mbox{\tt \ttprime\_a}}
+\newcommand{\aetyvar}{\mbox{\tt \ttprime\ttprime a}}
+\newcommand{\tycon}{\nonterminal{tycon}}
+\newcommand{\lab}{\nonterminal{lab}}
+\newcommand{\strid}{\nonterminal{strid}}
+
+\newcommand{\longvid}{\nonterminal{longvid}}
+\newcommand{\longvar}{\nonterminal{longvar}}
+\newcommand{\longcon}{\nonterminal{longcon}}
+\newcommand{\longexn}{\nonterminal{longexcon}}
+\newcommand{\longtycon}{\nonterminal{longtycon}}
+\newcommand{\longstrid}{\nonterminal{longstrid}}
+
+%%% "logos"
+% programming languages and proof assistants
+\newcommand\SML{Standard ML}
+
+% set theories
+\def\FS0/{\ensuremath{\mathsf{FS}_{0}}}
+
+
+\endinput

@@ -1,0 +1,234 @@
+\ProvidesPackage{thms}[2024/08/01 Theorem environments for my notes on proof assistants]
+
+% NOTE: must load this AFTER hyperref (if hyperref is being used)
+% otherwise the "Used in: ..." macro will not work properly.
+
+%%% Theorem related macros
+\newcounter{node}
+\newcounter{globalnode}
+\counterwithin{node}{section}
+
+\def\spaceafterperiod{\hskip{2\fontdimen2\font plus\fontdimen3\font minus\fontdimen4\font}}
+
+% following amsthm.sty's conventions when working in an amsclass, I'm
+% using "0.5\baselineskip $\pm$ 0.2\baselineskip" separating theorems,
+% remarks, definitions, etc.
+\newskip\remarkbeforeskipamount
+\remarkbeforeskipamount=0.5\baselineskip plus 0.2\baselineskip minus 0.2\baselineskip
+\def\remarkbeforeskip{\vskip\remarkbeforeskipamount}
+\def\remarkbeforebreak{\par \ifdim \lastskip <\remarkbeforeskipamount \removelastskip \penalty -100\remarkbeforeskip \fi}
+\let\remarkafterbreak\remarkbeforebreak
+
+% print a list of statistics, total number of remarks, theorems, etc.
+% 
+% The maximum value possible, usually, is $2^{31}-1 = 2\,147\,483\,647$
+% since counters use 32-bit two's-complement integers.
+% 
+% If I have more than 2.147 billion remarks (or definitions or theorems
+% or...), then I think I have bigger problems on my hands...
+\def\summary@body{\item Total items: \arabic{globalnode}}
+
+\def\printsummary{\remarkbeforebreak\phantomsection\addcontentsline{toc}{chapter}{Summary Statistics}\noindent\textbf{Summary Statatistics:}
+  \begin{itemize}[label=$-$,partopsep=0pt,itemsep=0pt,parsep=0pt,topsep=0pt, leftmargin=\parindent]\footnotesize
+    \summary@body
+  \end{itemize}
+}
+% https://tex.stackexchange.com/a/606201/14751
+\def\add@to@summary#1{
+  \g@addto@macro\summary@body{\ifnum\value{#1}>0{\item #1s \arabic{#1}}\else\fi}
+}
+
+
+%% For printing out references to a node
+% If we want to include back references for theorems, remarks, etc.
+% then the basic hack seems to be outlined here:
+% https://tex.stackexchange.com/a/349268/14751
+% It seems like the thing to do is to hack the preceding \eatlabel
+% macro to include the \AtEndDocument{\SaveTheoremRef{#1}} command to
+% store the references, then hack the \AddTheoremReferences{} macro to
+% be included in the \end{remark/theorem/etc.}
+
+% This command is written to the aux file by \SaveTheoremRef, hence
+% allowing us to access the cross-referencing data via \thmref@aux@<label>
+\newrobustcmd*\TheoremRef[2]{\csgdef{thmref@aux@#1}{#2}}
+
+% save theorem reference data. Called via \AtEndDocument{...}
+\newrobustcmd*\SaveTheoremRef[1]{
+   \ifcsdef{thmref@#1}{%
+     \immediate\write\@auxout{\string\TheoremRef{#1}{\csuse{thmref@#1}}}%
+   }{}
+}
+
+% stores node reference data in thmref@<label>
+% specifically as "(hypertarget name)(printed name)"
+\newcommand\@theoremref[1]{%
+  \def\do##1{\ifcsdef{thmref@##1}{\csxappto{thmref@##1}{, (node::\thenode)(\thenode)}}%
+                                 {\csxdef{thmref@##1}{(node::\thenode)(\thenode)}}%
+  }%
+  \docsvlist{#1}%
+}
+
+% Overwrite definitions of \ref and \cref. Since other packages such as
+% hyperref and cleverref change these this should be done at the
+% beginning of the document.
+\let\og@T@ref\T@ref
+\let\og@ref\ref
+\def\restore@ref@cmd{\let\T@ref\og@T@ref
+  \let\ref\og@ref}
+\def\patch@ref@cmd{
+  \@ifpackageloaded{hyperref}{
+    %\pretocmd{\@refstar}{\@theoremref{#1}}{}{}
+    % \apptocmd{\T@ref}{\@theoremref{#1}}{}{\@latex@error {Patching \noexpand\T@ref failed!}\@ehc}
+    \let\og@thms@T@ref\T@ref
+    \def\T@ref##1{\og@thms@T@ref{##1}\@theoremref{##1}}
+    %\patchcmd{\T@ref}{\@firstoffive{#1}}{\@theoremref{#1}\@firstoffive{#1}}{}{}
+  }{
+    \pretocmd{\ref}{\@theoremref{##1}}{}{}
+  }
+  %% \let\originalref\ref
+  %% \renewcommand*\ref[1]{\originalref{#1}\@theoremref{#1}}
+  % assuming cref is loaded, that is...
+  \ifdefined\cref
+    \let\originalcref\cref
+    \renewcommand*\cref[1]{\originalcref{##1}\@theoremref{##1}}
+  \fi
+}
+%% \AtBeginDocument{
+%%   \@ifpackageloaded{hyperref}{
+%%     %\pretocmd{\@refstar}{\@theoremref{#1}}{}{}
+%%     % \apptocmd{\T@ref}{\@theoremref{#1}}{}{\@latex@error {Patching \noexpand\T@ref failed!}\@ehc}
+%%     \let\og@thms@T@ref\T@ref
+%%     \def\T@ref#1{\og@thms@T@ref{#1}\@theoremref{#1}}
+%%     %\patchcmd{\T@ref}{\@firstoffive{#1}}{\@theoremref{#1}\@firstoffive{#1}}{}{}
+%%   }{
+%%     \pretocmd{\ref}{\@theoremref{#1}}{}{}
+%%   }
+%%   %% \let\originalref\ref
+%%   %% \renewcommand*\ref[1]{\originalref{#1}\@theoremref{#1}}
+%%   % assuming cref is loaded, that is...
+%%   \ifdefined\cref
+%%     \let\originalcref\cref
+%%     \renewcommand*\cref[1]{\originalcref{#1}\@theoremref{#1}}
+%%   \fi
+%% }
+
+% \AddTheoremReferences<label> prints the cross-referencing information for theorem <label>
+\newrobustcmd*\AddTheoremReferences[1]{
+  \ifcsdef{thmref@aux@#1}{% proceed only if thmref data exists
+    % \@make@thm@ref makes use of the fact we store information in
+    % parentheses, as we did in \@thremref
+    \def\prev@thm{} % used to check for repeats
+    \def\@make@thm@ref(##1)(##2){\hyperlink{##1}{##2}}
+    \let\@thmref\relax% will contain cross-referencing hyperlinks
+    \def\do##1{\edef\next@thm{\string##1}%
+        \ifx\next@thm\prev@thm{% if there's a repeat [i.e., a theorem is
+                               % cited twice in a node]
+          \relax% skip it
+        } \else {
+          \global\let\prev@thm\next@thm% update previous theorem
+          \ifx\@thmref\relax%
+            \xdef\@thmref{\noexpand\@make@thm@ref##1}%
+          \else%
+             \xappto\@thmref{, \noexpand\@make@thm@ref##1}%
+           \fi%
+        }\fi%
+    }
+    \xdef\@@thmref{\csuse{thmref@aux@#1}}
+    \expandafter\docsvlist\expandafter{\@@thmref}
+    \noindent{\footnotesize[Used in: \@thmref\hair]}%[Referenced by \@thmref\hair]
+  }{}
+}
+
+\newif\ifbackrefthms
+\backrefthmstrue
+
+\let\currentnodelabel\relax
+% Future me: This seems useless, but it is essential for getting the
+% "Used in:..." links working properly.
+\def\updatecurrentnodelink{\hypertarget{node::\theHnode}{}}
+% hack to make \label{...} not add horizontal space in remarks,
+% theorems, etc.
+% https://tex.stackexchange.com/a/444751/14751
+\newcommand\eatlabel{}
+\def\eatlabel\label#1{\ifbackrefthms\gdef\currentnodelabel{#1}\AtEndDocument{\SaveTheoremRef{#1}}\fi\label{#1}\eatindexandlabels}
+% do likewise for index entries, just keep eating in a mutually
+% recursive manner
+\newcommand\eatindex{}
+\def\eatindex@bracketed[#1]#2{\index[#1]{#2}\eatindexandlabels}
+\def\eatindex@unbracketed#1{\index{#1}\eatindexandlabels}
+\def\eatindex\index{\@ifnextchar[{\eatindex@bracketed}{\eatindex@unbracketed}}
+\def\eatindexandlabels{%
+  \@ifnextchar\label{\eatlabel}{%
+    \@ifnextchar\index{\eatindex}{\ignorespaces}}%
+}
+
+\def\printTheoremRefs{\ifbackrefthms\ifx\currentnodelabel\relax%
+  \else%
+    \par
+    \AddTheoremReferences{\currentnodelabel}%
+    \global\let\currentnodelabel\relax%
+  \fi\fi}
+
+% make sure that tt font is upright
+\let\og@tt\texttt
+\def\makettupright{\def\texttt##1{\textup{\og@tt{##1}}}}
+% used for index entries referring to the node number instead of the page
+\def\defcursec{%
+  \expandafter\xdef\csname cursec\theglobalnode\endcsname{\thenode}%
+}
+
+% \newremark{environment}{Printed Name} will have upright roman body font
+% 
+% Checks if the theorem or remark is an already defined name, e.g.,
+% \newremark{rule}{Rule} will throw an error because \rule is a
+% primitive in LaTeX.
+\def\newremark#1#2{\expandafter\@ifdefinable\csname#1\endcsname{%
+    \newcounter{#1}\expandafter\long\expandafter\def\csname #1\endcsname##1{%
+    \patch@ref@cmd\remarkbeforebreak\makettupright\noindent%
+    \refstepcounter{#1}%
+    \refstepcounter{globalnode}%
+    \refstepcounter{node}%
+    \phantomsection\updatecurrentnodelink\defcursec%
+    \textbf{\thenode}\enspace\textsc{#2}: \textit{##1\@addpunct{.}}\newline
+    \noindent\ignorespaces\eatindexandlabels%\@ifnextchar\label{\eatlabel}{\ignorespaces}
+  }}% \end{remark} is just \remarkafterbreak
+  \expandafter\def\csname end#1\endcsname{%
+    \printTheoremRefs%
+    \remarkafterbreak%
+    \restore@ref@cmd\ignorespacesafterend%
+  }
+  \add@to@summary{#1}
+}
+
+\let\theorembeforebreak\remarkbeforebreak
+\let\theoremafterbreak\remarkafterbreak
+\newcommand\theoremfont{\sl} % Knuth is super jazzed about \sl for
+                             % theorem bodies
+
+% \newtheorem{environment}{Printed Name} will have \theoremfont for its
+% body font (whatever it is [re]defined to be)
+%
+% Like \newremark, this will also check to see if #1 is already defined.
+\def\newtheorem#1#2{\expandafter\@ifdefinable\csname#1\endcsname{%
+  \newcounter{#1}\expandafter\long\expandafter\def\csname #1\endcsname##1{%
+    \patch@ref@cmd\theorembeforebreak\makettupright\noindent%
+    \refstepcounter{#1}%
+    \refstepcounter{globalnode}%
+    \refstepcounter{node}%%
+    \phantomsection\updatecurrentnodelink\defcursec%
+    \ifstrequal{#1}{puzzle}{%
+      \addcontentsline{puzzle}{chapter}{\numberline {\thepuzzle}##1}%
+    }{}%
+    \textbf{\thenode}\enspace\textsc{#2}: \textit{##1\@addpunct{.}}\newline
+    \noindent\theoremfont\ignorespaces%
+    \eatindexandlabels%\@ifnextchar\label{\eatlabel}{\ignorespaces}%
+  }}%
+  % \end{theorem} is just \theoremafterbreak
+  \expandafter\def\csname end#1\endcsname{\upshape\printTheoremRefs\theoremafterbreak\restore@ref@cmd\ignorespacesafterend}%\smallbreak}
+  \add@to@summary{#1}
+}
+
+% linking nodes
+\newcommand\zref[1]{(\S\ref{#1})}
+
+\endinput
