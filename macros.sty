@@ -25,6 +25,8 @@
 \setlength{\LTpre}{\smallskipamount}
 \setlength{\LTpost}{\smallskipamount}
 \usepackage{proof}
+\def\inferTabSkip{\qquad}
+
 \RequirePackage{amsmath,amssymb}
 \usepackage{xcolor}
 \RequirePackage[notlot,notlof]{tocbibind}
@@ -221,10 +223,30 @@ delim_0 ""
 \newcommand{\Index}[2][\relax]{\ifx#1\relax\xIndex{#2|transform}\else\xIndex[#1]{#2|transform}\fi}
 \let\index\Index
 \newif\if@index@second\@index@secondfalse
+% this is a hack which breaks if we, e.g., bold or otherwise manipulate
+% the section number
 \newcommand{\transform}[1]{\@index@secondfalse\forcsvlist\decodesec{#1}}
 \def\make@cursec@link#1#2{\hyperlink{globalnode.#1}{#2}}
-\newcommand{\decodesec}[1]{\if@index@second{, }\else\@index@secondtrue\fi%
+\newcommand{\decodesec}[1]{\if@index@second{, }\else{\@addpunct{,} }\@index@secondtrue\fi%
   \expandafter\make@cursec@link{#1}{\csname cursec#1\endcsname}}
 \def\hyperindexformat#1#2{#1{#2}}
+
+
+\RequirePackage{manfnt}
+%% Dangerous bend
+% Danger, Will Robinson!
+\newenvironment{danger}{\medbreak\noindent\hangindent=2pc\hangafter=-2%
+  \clubpenalty=10000%
+  \hbox to0pt{\hskip-\hangindent\dbend\hfill}\eightpoint\ignorespaces}%
+  {\medbreak\par}
+
+% Danger! Danger!
+\newenvironment{ddanger}{\medbreak\noindent\hangindent=3pc\hangafter=-2%
+  \clubpenalty=10000%
+  \hbox to0pt{\hskip-\hangindent\dbend\kern2pt\dbend\hfill}\eightpoint\ignorespaces}%
+  {\medbreak\par}
+
+\counterwithout{equation}{chapter}
+
 
 \endinput

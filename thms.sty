@@ -229,6 +229,7 @@
 }
 
 % linking nodes
-\newcommand\zref[1]{(\S\ref{#1})}
+\let\oldS\S
+\newcommand\zref[1]{(\oldS\ref{#1})}
 
 \endinput

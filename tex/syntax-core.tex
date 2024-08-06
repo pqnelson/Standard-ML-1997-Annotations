@@ -188,8 +188,8 @@ A \define{Type Variable} may be any alphanumeric identifier starting
 with a prime. The class of type variables is denoted ``{\TyVar}''.
 \end{definition}
 
-\begin{definition}{Subclass of equality type variables}
-The subclass of \define{Equality Type Variables} ETyVar of {\TyVar}
+\begin{definition}{Subclass of equality type variables}\label{defn:syntax-core:etyvar}
+The subclass of \define{Equality Type Variables} \EtyVar\ of {\TyVar}
 consists of those which start with two or more primes.
 \end{definition}
 
@@ -566,20 +566,20 @@ Rossberg cites Kahrs~\cite[\S8.3]{kahrs1993mistakes} for this second
 ambiguity, which Kahrs expands upon with several more severe ambiguities.
 \end{remark}
 
-\section{Syntactic restrictions}
+\section{Syntactic restrictions}\label{sec:syntax-core:syntactic-restrictions}
 
-\begin{clause}{No repeated labels in records}
+\begin{clause}{No repeated labels in records}\label{clause:syntax-core:restriction:no-repeated-labels-in-records}
 No expression row, pattern row, or type-expression row may bind the same
 \nonterminal{lab} twice.
 \end{clause}
 
-\begin{clause}{Cannot bind same identifier twice}
+\begin{clause}{Cannot bind same identifier twice}\label{clause:syntax-core:restriction:no-repeated-identifiers}
 No binding \nonterminal{valbind}, \nonterminal{typbind}, \nonterminal{datbind}, or \nonterminal{exbind} may bind the
 same identifier twice. This applies also to value identifiers within a
 \nonterminal{datbind}. 
 \end{clause}
 
-\begin{clause}{Type variables sequence uniqueness}
+\begin{clause}{Type variables sequence uniqueness}\label{clause:syntax-core:restriction:type-variables-uniqueness}
 No \nonterminal{tyvarseq} may contain the same \nonterminal{tyvar} twice. So \verb|('a, 'b, 'a)|
 is illegal since \verb|'a| appears twice.
 \end{clause}
@@ -620,7 +620,7 @@ that \texttt{NaN} is never equal to anything else (i.e., we lose
 reflexivity). 
 \end{remark}
 
-\begin{clause}{Type variable restrictions in value declarations}
+\begin{clause}{Type variable restrictions in value declarations}\label{clause:syntax-core:type-variable-restrictions-in-value-declarations}
 In a value declaration ``\texttt{val} \nonterminal{tyvarseq} \nonterminal{valbind}'', if
 \nonterminal{valbind} contains another value declaration ``\texttt{val} \nonterminal{tyvarseq\/$'$}
 \nonterminal{valbind\/$'$}'', then \nonterminal{tyvarseq} and \nonterminal{tyvarseq\/$'$} must be disjoint.
@@ -630,5 +630,5 @@ of which one occurs inside the other.
 
 This restriction applies after \nonterminal{tyvarseq} and \nonterminal{tyvarseq\/$'$} have been
 extended to include implicitly scoped type variables (as explained in
-Section 4.6).
+Section~\ref{sec:static-core:scope-of-explicit-type-variables}).
 \end{clause}

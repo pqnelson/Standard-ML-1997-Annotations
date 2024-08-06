@@ -1,2 +1,1192 @@
 \chapter{Static Semantics for the Core}
 
+\begin{remark}{Strategy: introduce ``semantic objects''}
+The Definition will introduce what is vaguely described as ``semantic
+objects'', then use these to present the semantics for both Core and
+Modules, both static and dynamic. We'll probably need to expand the
+notion of ``semantic object'' as needed in the process.
+
+Towards that end, we will have ``simple'' semantic objects (usually
+associated with an identifier of some kind) which will
+eventually combine into ``compound'' semantic objects (like types or
+environments). 
+\end{remark}
+
+\section{Simple Objects}
+
+\begin{definition}{Type constructor names}
+The \define{Type Constructor Names} are the values taken by type
+constructors. The Definition usually refers to them as ``type names'',
+but they must be clearly distinguished from ``type variables'' and
+``type constructors''.
+\end{definition}
+
+\begin{clause}{Simple objects $=$ Identifiers $+$ type constructors $+$ id status}
+All simple objects in static semantics of the language are built from
+identifiers, type constructor names, and identifier status
+descriptors. The Definition offers the following table for the possible
+simple semantic objects:
+\begin{equation*}
+\begin{array}{rcll}
+\alpha\ {\rm or}\ \tyvar & \in   & \TyVar       & \mbox{type variables}\\
+t                & \in   & \TyNames     & \mbox{type names}\\
+\is              & \in   & \IdStatus = \{\isc,\ise,\isv\}    & \mbox{identifier status descriptors}
+\end{array}
+\end{equation*}
+\end{clause}
+
+\begin{definition}{Equality attribute, admitting equality}
+Each $\alpha\in\TyVar$ possesses a Boolean \define{Equality} attribute,
+which determines whether or not it \define{Admits Equality}, i.e.,
+whether it is a member of \EtyVar{} \zref{defn:syntax-core:etyvar}
+\end{definition}
+
+\begin{definition}{Attributes of type names}
+Each $t\in\TyNames$ has an \define{Arity} $k\geq0$, and also posses an
+\define{Equality Attribute}. The Definition denotes the class of type
+names with arity $k$ by $\TyNames^{(k)}$.
+\end{definition}
+
+\begin{definition}{Type of special constants}\index{Type!of special constants}\index{Special constant!Type}\index{type scon@$\scontype(\scon)$}\index{$\scontype(\scon)$}
+With each special constant {\scon} we associate a
+\define{Type Name}, denoted $\scontype(\scon)$, which is either {\INT}, {\REAL},
+{\WORD}, {\CHAR},  or {\STRING} as indicated by Section~2.2.
+\end{definition}
+
+\section{Compound Objects}
+
+\begin{definition}{Collection of finite subsets}\index{$\Fin A$}\index{Fin A@$\Fin A$}
+Let $A$ be a set. The Definition uses the notation $\Fin A$ for the
+collection of all finite subsets of $A$.
+\end{definition}
+
+\begin{definition}{Finite maps}\index{Finite map}\index{$\finfun{A}{B}$}
+Let $A$, $B$ be sets. Then the Definition denotes by $\finfun{A}{B}$ the
+set of all \define{Finite Maps} (partial functions with finite domain)
+from $A$ to $B$. The domain and range of a finite map $f$ are denoted
+$\Dom f$ and $\Ran f$.
+
+A finite map may be written explicitly in the form $\kmap{a}{b},
+\ k\geq 0$;
+in particular the empty map is $\emptymap$.
+\end{definition}
+
+\begin{convention}{Constructing finite map by set comprehension}\label{convention:static-core:finite-map-by-set-comprehesion}
+The Definition uses the notation $\{x\mapsto e\ ;\ \phi\}$ --- a form of
+set comprehension --- to stand for the finite map $f$ whose domain is
+the set of values $x$ which satisfy the condition $\phi$, and whose
+value on this domain is given by $f(x)=e$.
+\end{convention}
+
+\begin{definition}{Modifying finite maps}\label{defn:static-core:modifying-finite-maps}\index{Finite map!modification}\index{$\plusmap{f}{g}$}
+When $f$ and $g$ are finite maps the map $\plusmap{f}{g}$, called
+$f$ \define{modified} by $g$, is the finite map with domain
+$\Dom f \cup \Dom g$ and values
+\begin{equation*}
+  (\plusmap{f}{g})(a) = \begin{cases}g(a) & \mbox{if $a\in\Dom g$}\\
+    f(a) & \mbox{otherwise}.
+  \end{cases}
+\end{equation*}
+\end{definition}
+
+\begin{remark}{Notation for modifying finite maps}
+In my opinion, the notation $f+g$ is unfortunate because addition is
+commutative\footnote{Except for ordinals, where $4+\omega=\omega$.}, but $f+g\neq g+f$ when
+$\Dom f\cap\Dom g\neq\emptyset$. Although I dislike it, and would never
+use it in a million years in my own personal work, I am trying to adhere
+to the Definition's conventions.
+
+I have seen other people use the notation $f\mathbin{{<}\mskip-4mu{+}}g$ (to indicate
+that $g$ overwrites $f$, if there is any on $\Dom f\cap\Dom g\neq\emptyset$).
+\Mizar/ uses the notation $f\plusdot g$ (\Mizar/ code: ``\verb|f +* g|'', in
+\verb|FUNCT_4|) for this operation.
+\end{remark}
+
+\begin{clause}{Compound objects for Core static semantics}
+The compound objects for the static semantics of the Core language are:
+\begin{align*}
+        \tau    & \in \Type = \TyVar\cup\RowType\cup\FunType\cup\ConsType\\
+ \longtauk\ {\rm or}\ \tauk
+                & \in  \Type^k\\
+ \longalphak\ {\rm or}\ \alphak
+                & \in  \TyVar^k\\
+ \varrho        & \in  \RowType = \finfun{\Lab}{\Type} \\
+ \tau\rightarrow\tau'
+                & \in  \FunType = \Type\times\Type \\
+                & \mathrel{\phantom{\in}} \ConsType = \cup_{k\geq 0}\ConsType^{(k)}\\
+        \tauk t & \in  \ConsType^{(k)} = \Type^k\times\TyNamesk  \\
+\typefcn\ {\rm or}\ \typefcnk
+                & \in  \TypeFcn = \cup_{k\geq 0}\TyVar^k\times\Type\\
+\tych\ {\rm or}\ \longtych
+                & \in  \TypeScheme = \cup_{k\geq 0}\TyVar^k\times\Type\\
+(\theta,\VE)    & \in  \TyStr = \TypeFcn\times\ValEnv\\
+\SE             & \in  \StrEnv = \finfun{\StrId}{\Env}\\
+\TE             & \in  \TyEnv = \finfun{\TyCon}{\TyStr}\\
+\VE             & \in  \ValEnv = \finfun{\VId}{\TypeScheme\times\IdStatus}\\
+\E\ {\rm or}\ \newlongE{}
+                & \in  \Env = \StrEnv\times\TyEnv\times\ValEnv\\
+\T              & \in  \TyNameSets = \Fin(\TyNames)\\
+\U              & \in  \TyVarSet = \Fin(\TyVar)\\
+\C\ {\rm or}\ \T,\U,\E   & \in  \Context = \TyNameSets\times\TyVarSet\times\Env
+\end{align*}
+Note: the Definition takes $\cup$ to mean the \emph{disjoint union} over
+semantic object classes. All the defined object classes are understood
+to be disjoint.
+\end{clause}
+
+\begin{definition}{Free type names and free type variables}
+For any semantic object $A$, the Definition denotes by:
+\begin{enumerate}
+\item ``$\TyNamesFcn A$'' the set of type names, and
+\item ``$\TyVarsFcn A$'' the set of type variables occurring free in $A$.
+\end{enumerate}
+Note that $\Lambda$ and $\forall$ bind type variables.
+\end{definition}
+
+\begin{definition}{Value identifier status}
+There are several things to note here:
+
+A value environment $\VE$ maps value identifiers to a pair
+consisting of a type scheme and an identifier status.
+If $\VE(\vid)=(\sigma,\is)$, we say $\vid$ \define{has status}
+$\is$ in $\VE$.
+
+An occurrence of a value identifier which is elaborated in \VE{} is
+referred to as:
+\begin{enumerate}
+\item a \define{Value Variable} if its status in \VE{} is \isv,
+\item a \define{Value Constructor} if its status in \VE{} is \isc, and
+\item a \define{Exception Constructor} if its status in \VE{} is \ise.
+\end{enumerate}
+\end{definition}
+
+\section{Projection, Injection, and Modification}
+
+\begin{definition}{Projection}
+If we have a tuple $x=(x_{1},x_{2},\dots,x_{n})$, then we will often
+find ourselves writing the projection as ``$x_{i}$ of $x$''. That is to
+say, the Definition relies on metavariable names to indicate which
+component is selected.
+
+For example, ``the value environment component of $E$'' is denoted
+``$\of{\VE}{\E}$''
+\end{definition}
+
+\begin{convention}{Projection of component that's finite map, applying argument}
+When a tuple contains a finite map, the Definition abuses notation and
+``applies'' the tutple to an argument, again relying on the syntactic
+class of the argument to determine the relevant function.
+
+For example, $\C(\tycon)$ means $(\of{\TE}{\C})\tycon$,
+and $\C(\vid)$ means $(\of{\VE}{(\of{E}{\C})})(\vid)$.
+\end{convention}
+
+\begin{convention}{Environments applied to long identifiers}
+The Definition extends this notational choice to allow environments to
+be applied to long identifiers. For example,$\longvid = \strid_1.\syndots.\strid_k.\vid$ then
+$\E(\longvid)$ means
+\begin{equation*}
+   (\of{\VE}
+       {(\of{\SE}
+            {\syndots(\of{\SE}
+                       {(\of{\SE}{\E})\strid_1}
+                   )\strid_2\syndots}
+        )\strid_k}
+    )\vid.
+\end{equation*}
+\end{convention}
+
+\begin{definition}{Injection}
+Components may be injected into tuple classes; for example
+``$\VE\ \In\ \Env$'' means the environment
+$(\emptymap,\emptymap,\VE)$.
+\end{definition}
+
+\begin{remark}{Injections initialize all other components to empty set}
+I think what the Definition means to say is that an injection ``$x$ \In\ $y$''
+amounts to a ``constructor'' of a new Y tuple whose components are all
+the empty set \emph{except} the X factor.
+\end{remark}
+
+\begin{convention}{Modification of environment}
+Extending the notation for modifying finite maps~\zref{defn:static-core:modifying-finite-maps},
+the Definition modifies an environment $E$ by an environment $E'$
+constructing a new environment $E+E'$, preferring $E'$ but resorting to
+$E$ when necessary. (Or, overwriting any overlapping data shared by $E$
+and $E'$ with $E'$.) This notation is extended to
+tuples in general.
+
+Components are often left implicit in modification. For example, $\E+\VE$
+means $\E+(\emptymap,\emptymap,\VE)$.
+
+For set components, the Definition means ``union'' for modification, so
+that $\C+(\T,\VE)$ means
+\begin{equation*}
+(\ (\of{\T}{\C})\cup\T,\ \of{\U}{\C},\ (\of{\E}{\C})+\VE\ ).
+\end{equation*}
+(I, uh, don't know how to feel about this since it should be $\bigl(((\of{\T}{\C})\setminus\T)\cup\T\bigr)$
+instead of $(\of{\T}{\C})\cup\T$.)
+\end{convention}
+
+\begin{definition}{Extending a tuple coherently}
+When we modify a context $\C$ by an environment $\E$ (or a type
+environment \TE) while at the same time extending $\T$ of $\C$ to
+include the type names of $\E$ (resp., of $\TE$), we do this by defining
+$\C\oplus\E$ (resp., $\C\oplus\TE$) to mean
+$\C+(\TyNamesFcn\E,\E)$ (resp., $\C+(\TyNamesFcn\TE,\TE)$).
+\end{definition}
+
+\section{Types and Type Funtions}\label{section:type-functions}
+
+\begin{definition}{Equality type, admitting equality}\index{Type!Equality ---}\index{Equality!Type}\index{Admits equality}
+A type $\tau$ is an \define{Equality Type} (or \define{Admits Equality})
+if it is one of the following:
+\begin{enumerate}
+\item $\alpha$, where $\alpha$ admits equality;
+\item $\{\lab_{1}\mapsto\tau_{1},\ \syndots,\ \lab_{n}\mapsto\tau_{n}\}$,
+      where each $\tau_{i}$ admits equality;
+\item $\tauk\t$, where $t$ and all members of $\tauk$ admit equality;
+\item $(\tau')\REF$.
+\end{enumerate}
+\end{definition}
+
+\begin{clause}{Type functions}\index{Type function}
+A type function $\theta=\Lambda\alphak.\tau$ has arity $k$; the bound
+variables must be distinct.
+\end{clause}
+
+\begin{clause}{Equating two type functions}\label{convention:static-core:equating-type-functions}
+Two type functions are considered equal if they only differ in their
+choice of bound variables (alpha-conversion). In particular, the
+equality attribute has no significance in a bound variable of a type function.
+The Definitions gives as an example $\Lambda\alpha.\alpha\to
+\alpha$ and $\Lambda\beta.\beta\to\beta$ are equal type functions
+even if $\alpha$ admits equality but $\beta$ does not.
+\end{clause}
+
+\begin{clause}{Eta conversion for type functions}
+If $t$ has arity $k$, then we write $t$ to mean $\Lambda\alphak.\alphak\t$
+(eta-conversion); thus $\TyNames\subseteq\TypeFcn$.
+\end{clause}
+
+\begin{definition}{Equality type function, admits equality}\index{Equality!Type function}\index{Type function!Equality ---}\index{Admits equality}
+We say $\theta=\Lambda\alphak.\tau$
+is an \define{Equality} type function, or \define{Admits Equality}, if when the
+type variables $\alphak$ are chosen to admit equality then $\tau$ also admits
+equality.
+\end{definition}
+
+\begin{clause}{Application of type function, beta reduction}\index{Type function!beta reduction}
+We write the application of a type function $\theta$ to a vector
+$\tauk$ of types as $\tauk\theta$.
+If $\theta=\Lambda\alphak.\tau$ we set $\tauk\theta=\tau\{\tauk/\alphak\}$
+(the Definition calls this ``beta-conversion''). 
+\end{clause}
+
+\begin{convention}{Notation for substitution}
+We write $\tau\{\thetak/\tk\}$ for the result of substituting type
+functions $\thetak$ for type names $\tk$ in $\tau$.
+We assume that all beta-conversions
+are carried out after substitution, so that for example
+\begin{equation*}
+(\tauk\t)\{\Lambda\alphak.\tau/\t\}=\tau\{\tauk/\alphak\}.
+\end{equation*}
+\end{convention}
+
+\section{Type Schemes}
+
+\begin{ddanger}
+Type schemes are not fully discussed or formalized explicitly in the
+Definition. It's just assumed you are familiar with what they mean by
+them. For the most part, I am relying heavily on Pottier and
+R{\'e}my~\cite{pottier2005essence} to make sense of their usage in
+Standard ML.
+\end{ddanger}
+
+\begin{definition}{Generalizes a type}\index{Type scheme!generalizes a type}
+A type scheme $\tych=\forall\alphak.\tau$ \define{generalises} a type
+$\tau'$, written $\tych \succ\tau'$, if $\tau'=\tau\{\tauk/\alphak\}$
+for some $\tauk$, where each member $\tau_i$ of $\tauk$ admits equality
+if $\alpha_i$ does.
+\end{definition}
+
+\begin{definition}{Generalizes a scheme}
+A type scheme $\tych=\forall\alphak.\tau$ \define{generalizes} $\tych'=\forall\beta^{(l)}.\tau'$,
+written $\tych\succ\tych'$, if $\tych\succ\tau'$ and $\beta^{(l)}$ contains
+no free type variable of $\tych$.
+
+It can be shown that $\tych\succ\tych'$ iff, for all $\tau''$, whenever
+$\tych'\succ\tau''$ then also $\tych\succ\tau''$.
+\end{definition}
+
+\begin{clause}{Equality of type schemes}
+Two type schemes $\tych$ and $\tych'$ are considered equal
+if they can be obtained from each other by
+renaming and reordering of bound type variables, and deleting type
+variables from the prefix which do not occur in the body.
+
+Note: unlike equality of type functions~\zref{convention:static-core:equating-type-functions}, here the equality attribute
+\emph{must be preserved} in renaming. For example $\forall\alpha.\alpha\to\alpha$
+and $\forall\beta.\beta\to\beta$ are only equal if either both $\alpha$
+and $\beta$ admit equality, or neither does.
+\end{clause}
+
+\begin{clause}{Types considered as type schemes}
+The Definition considers a type $\tau$ to be a type scheme, identifying it with
+$\forall().\tau$.
+\end{clause}
+
+\section{Scope of Explicit Type Variables}\label{sec:static-core:scope-of-explicit-type-variables}
+
+\begin{clause}{Type and datatype bindings explicitly introduce type variables}
+In the Core language, a type binding
+(\hyperref[grammar:typbind]{\nonterminal{typbind}}) or datatype binding (\hyperref[grammar:datbind]{\nonterminal{datbind}}) can explicitly
+introduce type variables whose scope is that binding.
+\end{clause}
+
+\begin{clause}{Value declarations have optional type variable bindings}
+In a value declaration {\texttt{val} $\tyvarseq$ $\valbind$}, the sequence $\tyvarseq$ binds
+type variables: a type variable occurs free in 
+{\texttt{val} $\tyvarseq$ $\valbind$} iff it occurs free in $\valbind$
+and is not in the sequence $\tyvarseq$.
+
+However, the Definition states, the explicit binding of type variables
+at \texttt{val} is optional, so the only remaining place in the Core
+language where type variables occur (which must be dealt with):
+\begin{enumerate}
+\item the scope of an explicit type variable occurring in the
+  ``\texttt{:}~$\ty$'' of a typed expression or pattern;
+\item the ``\texttt{of}~$\ty$'' of an exception binding.
+\end{enumerate}
+The rest of this section, the Definition considers such free occurrences
+of type variables only.
+\end{clause}
+
+\begin{definition}{Scope of explicit type variables}
+Every occurrence of a value declaration is said to \define{Scope} a set
+of explicit type variables, determined as follows:
+\begin{enumerate}
+\item a free type variable is unguarded, or
+\item a free type variable is implicitly scoped.
+\end{enumerate}
+\end{definition}
+
+
+\begin{definition}{Unguarded occurrence of type variable}
+A free occurrence of $\alpha$ in a value declaration
+$\explicitvaldec$ is said to be \define{Ungarded} if the occurrence
+is not part of a smaller value declaration within $\valbind$. In this
+case we say that $\alpha$ \define{occurs unguarded} in the value
+declaration. 
+\end{definition}
+
+\begin{definition}{Implicitly scoped type variable}
+We say that $\alpha$ is \define{Implicitly scoped} at a particular
+declaration {\texttt{val} $\tyvarseq$ $\valbind$} in a program if:
+\begin{enumerate}
+\item $\alpha$ occurs unguarded in this value declaration, and 
+\item $\alpha$ does not occur unguarded in any larger value declaration
+containing the given one.
+\end{enumerate}
+\end{definition}
+
+\begin{clause}{Assume every explicit type variable implicitly scoped at val}
+Henceforth, the Definition assumes that for every
+value declaration $\boxml{val}\,\tyvarseq\syndots$ occurring in the
+program, every explicit type variable implicitly scoped at the {\tt val}
+has been added to $\tyvarseq$ (subject to the syntactic constraint in Section~\ref{sec:syntax-core:syntactic-restrictions}).
+\end{clause}
+
+\begin{example}{Type variables with different scopes in value declarations}
+For example, in the two declarations
+\begin{tabbing}
+\indent\=\tt  val x =  let val id:'a->'a = fn z=>z in id id end\\
+       \>\tt  val x = (let val id:'a->'a = fn z=>z in id id end; fn z=>z:'a)
+\end{tabbing}
+the type variable \boxml{'a} is scoped differently; they become respectively
+\begin{tabbing}
+\indent\=\tt val x =  let val 'a id:'a->'a = fn z=>z in id id end\\
+       \>\tt val 'a x = (let val id:'a->'a = fn z=>z in id id end; fn z=>z:'a)
+\end{tabbing}
+Then, according to the inference rules in
+Section~\ref{section:static-core:inference-rules}
+the first example can be elaborated, but the second cannot since \ml{'a}
+is bound at the outer value declaration leaving no possibility of two 
+different instantiations of the type of \ml{id} in the application
+\ml{id id}.
+\end{example}
+
+\section{Non-expansive Expressions}
+
+\begin{definition}{Non-expansive expression in a given context}
+An expression is \define{Non-expansive} in context $\C$ if, after
+replacing infixed forms by their equivalent prefixed forms, and derived
+forms by their equivalent forms, it can be generated by the following
+grammar from the non-terminal $\nexp$:
+\medskip
+
+\halign{&\indent\hfil$#$\ &\ $#$\hfil\ &\ $#$\hfil\cr
+\nexp&::=&\scon & \nexprow&::=&\mbox{$\lab$ \texttt{=} $\nexp\langle$\texttt{,} $\nexprow\rangle$}\cr
+&&\langle\OP\rangle\longvid\cr
+&&\ttlbrace\langle\nexprow\rangle\ttrbrace&\conexp&::=&\mbox{\texttt{(}$\conexp\langle$\texttt{:}$\ty\rangle$\texttt{)}}\cr
+&&\mbox{\texttt{(}$\nexp$\texttt{)}}&&&\hbox{$\langle\OP\rangle\longvid$}\cr
+&&\mbox{$\conexp\;\nexp$}\cr
+&&\nexp \boxml{:} \ty\cr
+&&\mbox{\texttt{fn} $\match$}\cr\noalign{\vskip6pt}}
+
+\hangindent=\parindent\hangafter=0\noindent
+{\sl Restriction:}\/ Within a $\conexp$, we require $\longvid\neq\REF$ and
+further that $\bigl(\of{\is\,}{\,\C(\longvid)}\bigr)\in\{\isc,\ise\}$.\medskip
+
+\noindent All other expressions are said to be \define{Expansive} in $C$.
+\end{definition}
+
+\begin{clause}{Non-expansive expressions are always `pure'}
+The Definition informs us that the dynamic evaluation of a non-expansive
+expression will neither (a) generate an exception, nor (b) extend the
+domain of memory. But the evaluation of an expansive expression might.
+\end{clause}
+
+\section{Closure}\label{sec:closure}
+
+\begin{definition}{Closure of a type with respect to a semantic object}
+Let $\tau$ be a type and $A$ a semantic object (usually $A$ is a context
+$C$). Then $\cl{A}{(\tau)}$, the \define{closure} of $\tau$ with respect
+to $A$, is the type scheme $\forall\alphak.\tau$, where
+$\alphak=\TyVarFcn(\tau)\setminus\TyVarFcn A$.
+\end{definition}
+
+\begin{definition}{Total closure}
+The Definition abbreviates the \define{total} closure $\cl{\emptymap}{(\tau)}$ to
+$\cl{}{(\tau)}$.
+\end{definition}
+
+\begin{clause}{Closure of value environment}\label{defn:closing-value-environment}
+If the range of a value environment $\VE$ contains only types (rather
+than arbitrary type schemes) we set
+\begin{equation*}
+\cl{A}{\VE}=\{\vid\mapsto(\cl{A}{(\tau)},\is)\ ;\ \VE(\vid)=(\tau,\is)\}.
+\end{equation*}
+Recall the convention for constructing finite maps by set
+comprehension~\zref{convention:static-core:finite-map-by-set-comprehesion},
+which is done here.
+
+Closing\index{24.3} a value environment $\VE$ that stems from
+the elaboration of a value binding $\valbind$ requires extra
+care to ensure type security of references and exceptions and correct
+scoping of explicit type variables.
+Recall~\zref{clause:syntax-core:type-variable-restrictions-in-value-declarations} that \hyperref[grammar:valbind]{\valbind} is not allowed to bind the
+same variable twice. Thus, for each $\vid\in\Dom\VE$ 
+there is a unique \mbox{\pat\ \ml{=} \exp}
+in $\valbind$ which binds $\vid$. If $\VE(\vid)=(\tau,\is)$, let
+$\cl{\C,\valbind}{\VE(\vid)}=(\longtych,\is)$, where
+\begin{equation*}
+  \alphak=\begin{cases}
+  \TyVarFcn\tau\setminus\TyVarFcn\C,&\mbox{if $\exp$ is non-expansive in $\C$};\\
+               (),&\mbox{if $\exp$ is expansive in $\C$.}
+  \end{cases}
+\end{equation*}
+\end{clause}
+
+\section{Type Structures and Type Environments}
+
+\begin{definition}{Well-formed type structures}
+The definition calls a type structure $(\theta,\VE)$
+\define{Well-Formed} if either $\VE=\emptymap$ or $\theta$ is a type
+name $t$.
+(The latter case arises, with $\VE\neq\emptymap$, in $\DATATYPE$ declarations.)
+\end{definition}
+
+\begin{definition}{Well-formed semantic objects}
+An object or ``assembly''\footnote{Yeah, this is the first time I think the
+word ``assembly'' has been used in the Definition, and I'm as confused
+by its appearance as you probably are\dots But they will show up again
+extensively in the chapter on static semantics of modules.} $A$ of semantic objects is \define{Well-Formed} if every type structure
+occurring in $A$ is well-formed.
+\end{definition}
+
+\begin{definition}{Type structure respects equality}
+A type structure $(\t,\VE)$ is said to \define{Respect Equality} if,
+whenever $\t$ admits equality, then either $\t=\REF$ (see
+Appendix~C) or, for each $\VE(\vid)$ of the form
+$(\forall\alphak.(\tau\rightarrow\alphak\t), \is)$,
+the type function $\Lambda\alphak.\tau$ also admits equality.
+
+(This ensures that the equality predicate ``~{\tt =}~'' will be applicable
+to a constructed value $(\vid,v)$ of type $\tauk\t$ only when it is
+applicable to the value $v$ itself, whose type is
+$\tau\{\tauk/\alphak\}$.)
+\end{definition}
+
+\begin{definition}{Type environment respecting equality}
+A type environment $\TE$ \define{Respects Equality} if all its type
+structures do so.
+\end{definition}
+
+\begin{definition}{Type environment maximizes equality}
+Let $\TE$ be a type environment, and let $T$ be the set of type names
+$\t$ such that $(\t,\VE)$ occurs in $\TE$ for some $\VE\neq\emptymap$.
+Then $\TE$ is said to \define{Maximise Equality} if
+\begin{enumerate}
+\item $\TE$ respects equality, and also
+\item if any larger subset of $T$ were to admit equality (without any
+  change in the equality attribute of any type names not in $T$), then
+  $\TE$ would cease to respect equality.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}{Environment for abstract type declarations}
+For any $\TE$ of the form
+\begin{equation*}
+\TE=\{\tycon_{i}\mapsto(t_{i},\VE_{i})\ ;\ 1\leq i\leq k\},
+\end{equation*}
+where no $\VE_{i}$ is the empty map, and for any $\E$ we define
+$\Abs(\TE,\E)$ to be the environment obtained from 
+$\E$ and $\TE$ as follows (just three easy steps):
+\begin{enumerate}
+\item Let $\Abs(\TE)$ be the type environment
+$\{\tycon_{i}\mapsto(t_{i},\emptymap)\ ;\ 1\leq i\leq k\}$
+in which all value environments $\VE_{i}$ have been replaced by the empty map. 
+\item Let $t'_{1},\syndots,t'_{k}$ be new distinct type names none of which
+admit equality.
+\item Then $\Abs(\TE,\E)$ is the result of simultaneously
+substituting
+$t'_{i}$ for $t_{i}$, $1\leq i\leq k$,  throughout $\Abs(\TE)+\E$. 
+(The effect of the latter substitution is to ensure that the use of 
+equality on  an $\ABSTYPE$ is restricted to the $\WITH$ part.)
+\end{enumerate}
+\end{definition}
+
+\begin{remark}{Abs(\TE, \E) used for abstype declarations only}
+Note that this last definition for $\Abs(\TE,\E)$ is used only in
+Rule~\eqref{rule:static-core:abstype-declaration} of the Definition for \texttt{abstype} declarations.
+\end{remark}
+
+\section{Inference Rules}\label{section:static-core:inference-rules}
+
+\begin{clause}{Judgement form}
+Each rule of the semantics allows inferences among ``sentences''
+[judgements] of the form
+\begin{equation*}
+A\vdash phrase\Rightarrow A'
+\end{equation*}
+where $A$ is usually a context, $phrase$ is a phrase of the Core
+language, and $A'$ is a semantic object (usually a type or an
+environment). The Definition suggests reading this as ``$phrase$
+elaborates to $A'$ in (context) $A$.''
+
+Some rules have extra hypotheses not of this form, which are called
+\define{Side Conditions}.
+\end{clause}
+
+\begin{convention}{First and second options}
+The Definition presents the rules with optional phrases within single
+angle brackets \optional{\ } which are called \define{First Options}.
+There are also optional phrases within double angle brackets
+\optional{\optional{\ }} which are called \define{Second Options}. Their
+usage is governed by the following convention:
+\begin{quote}
+In each instance of a rule, the first options must be either all present
+or all absent; similarly the second options must be either all present
+or all absent.
+\end{quote}
+\end{convention}
+
+\begin{clause}{Intended property of context}
+Although not assumed in our definitions, it is intended that every
+context $\C=\T,\U,\E$ has the property that $\TyNamesFcn\E\subseteq\T$.
+Thus $\T$ may be thought of, loosely, as containing all type names
+which ``have been generated''. It is necessary to include $\T$ as a
+separate component in a context, since $\TyNamesFcn\E$ may not contain
+all the type names which have been generated; one reason is that a
+context $\T,\emptyset,\E$ is a projection of the basis $\B=\T,\F,\G,\E$
+whose other components $\F$ and $\G$
+could contain other such names --- recorded in $\T$ but not present in
+$\E$.  Of course, remarks about what ``has been generated'' are not
+precise in terms of the semantic rules. But the following precise result
+may easily be demonstrated:
+\begin{quote}
+Let S be a sentence ~$\T,\U,\E\ts{\it phrase}\ra A$~ such that
+$\TyNamesFcn\E\subseteq\T$, and let S$'$ be a sentence
+~$\T',\U',\E'\ts{\it phrase}'\ra A'$~ occurring in a proof of S; then
+also $\TyNamesFcn\E'\subseteq\T'$.
+\end{quote}
+\end{clause}
+
+\begin{remark}{Equation numbers match Definition's rule numbers}
+Again, for the sake of consistency, the number for the rule found in the
+Definition is written here as its Equation number.
+\end{remark}
+
+\begin{remark}{Comments swept into the rule}
+Note that I have relocated the ``comments'' found in the Definition to
+appear in the relevant rule, when it simplifies the presentation.
+\end{remark}
+
+\rulesec{Atomic Expressions}{\C\vdash\atexp\Rightarrow\tau}
+
+\begin{sml-rule}{Special constants}
+\begin{equation}\label{rule:static-core:special-constants}
+\vcenter{\infer{\C\ts\scon\ra\scontype(\scon)}{}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Value variable}
+Note this simplified three rules (for value variables, value
+constructors, and exception constants) in the 1990 Definition into a single
+rule. The second premise, $\sigma\succ\tau$, is new to the 1997 Definition.
+\begin{equation}\label{rule:static-core:value-variable}
+\vcenter{\infer{\C\ts\longvar\ra\tau}{\C(\longvar)= (\sigma,\is) & \sigma\succ\tau}}
+\end{equation}
+The instantiation of type schemes allows different occurrences of a
+single $\longvid$ to assume different types. Note that the identifier
+status is not used in this rule.
+\end{sml-rule}
+
+\begin{sml-rule}{Record expressions}
+\begin{equation}
+\vcenter{\infer{\C\ts\ttlbrace\ \optional{\labexps}\ \ttrbrace\ra\emptymap\optional{+\ \varrho}{\rm\ in\ \Type}}{\optional{\C\ts\labexps\ra\varrho}}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Let expressions}
+\begin{equation}\label{rule:static-core:let-expression}
+  \vcenter{\infer{\C\ts\letexp\ra\tau}%
+    {\C\ts\dec\ra\E
+      & \C\oplus\E\ts\exp\ra\tau
+      & \TyNamesFcn\tau\subseteq\of{\T}{\C}}}
+\end{equation}
+The use of $\oplus$, here and elsewhere, ensures that
+type names generated by the first sub-phrase are different from 
+type names generated by the second sub-phrase. The side condition
+prevents type names generated by $\dec$ from escaping outside the local declaration.
+\end{sml-rule}
+
+\begin{sml-rule}{Parenthetical expression}
+\begin{equation}\label{rule:syntax-core:atexp:paren}
+\vcenter{\infer{\C\ts\parexp\ra\tau}{\C\ts\exp\ra\tau}}
+\end{equation}
+\end{sml-rule}
+
+\rulesec{Expression Rows}{\C\ts\labexps\ra\varrho}
+
+\begin{sml-rule}{Expression rows}
+\begin{equation}\label{rule:syntax-core:expression-row}
+\vcenter{\infer{\C\ts\longlabexps\ra\{\lab\mapsto\tau\}\optional{+\ \varrho}}%
+    {\C\ts\exp\ra\tau
+      & \optional{\C\ts\labexps\ra\varrho}}}
+\end{equation}
+\end{sml-rule}
+
+\rulesec{Expressions}{\C\ts\exp\ra\tau}
+
+\begin{sml-rule}{Atomic}
+\begin{equation}\label{rule:syntax-core:atomic}
+\vcenter{\infer{\C\ts\atexp\ra\tau}{\C\ts\atexp\ra\tau}}
+\end{equation}
+The relational symbol $\ts$ is overloaded for all syntactic classes (here
+atomic expressions and expressions).
+\end{sml-rule}
+
+\begin{sml-rule}{Application}
+\begin{equation}\label{rule:syntax-core:application}
+  \vcenter{\infer{\C\ts\appexp\ra\tau}
+    {\C\ts\exp\ra\tau'\rightarrow\tau
+      & \C\ts\atexp\ra\tau'}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Typed}
+\begin{equation}\label{rule:syntax-core:typed}
+  \vcenter{\infer{\C\ts\typedexp\ra\tau}{\C\ts\exp\ra\tau
+  & \C\ts\ty\ra\tau}}
+\end{equation}
+Here $\tau$ is determined by $\C$ and $\ty$. Notice that type variables
+in $\ty$ cannot be instantiated in obtaining $\tau$; thus the expression
+\verb+1:'a+ will not elaborate successfully, nor will the expression
+\verb+(fn x=>x):'a->'b+.
+The effect of type variables in an explicitly typed expression is
+to indicate exactly the degree of polymorphism present in the expression.
+\end{sml-rule}
+
+\begin{sml-rule}{Handle exception}
+\begin{equation}\label{rule:syntax-core:handle-exception}
+  \vcenter{\infer{\C\ts\handlexp\ra\tau}
+    {\C\ts\exp\ra\tau
+      & \C\ts\match\ra\EXCN\rightarrow\tau}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Raise exception}
+\begin{equation}\label{rule:syntax-core:raise-exception}
+\vcenter{\infer{\C\ts\raisexp\ra\tau}{\C\ts\exp\ra\EXCN}}
+\end{equation}
+Note that $\tau$ does not occur in the premise; thus a $\RAISE$
+expression has ``arbitrary'' type.
+\end{sml-rule}
+
+\begin{sml-rule}{Function}
+\begin{equation}\label{rule:syntax-core:function}
+\vcenter{\infer{\C\ts\fnexp\ra\tau}{\C\ts\match\ra\tau}}
+\end{equation}
+\end{sml-rule}
+
+\rulesec{Matches}{\C\ts\match\ra\tau}
+
+\begin{sml-rule}{Match}
+\begin{equation}\label{rule:syntax-core:match}
+  \vcenter{\infer{\C\ts\longmatch\ra\tau}
+    {\C\ts\mrule\ra\tau
+      & \optional{\langle\C\ts\match\ra\tau}}}
+\end{equation}
+\end{sml-rule}
+
+\rulesec{Match Rules}{\C\ts\mrule\ra\tau}
+
+\begin{sml-rule}{Mrule}
+\begin{equation}\label{rule:syntax-core:mrule}
+  \vcenter{\infer{\C\ts\longmrule\ \ra\tau\rightarrow\tau'}
+    {\C\ts\pat\ra(\VE,\tau)
+      & \C+\VE\ts\exp\ra\tau'
+      & \TyNamesFcn\VE\subseteq\of{\T}{\C}}}
+\end{equation}
+This rule allows new free type variables to enter
+the context. These new type variables will be chosen, in effect, during
+the elaboration of $\pat$ (i.e., in the inference of the first
+hypothesis). In particular, their choice may have to be made to
+agree with type variables present in any explicit type expression
+occurring within $\exp$ (see rule~\ref{rule:syntax-core:typed}).
+\end{sml-rule}
+
+\rulesec{Declarations}{\C\ts\dec\ra\E}
+
+\begin{sml-rule}{Value Declaration}
+\begin{equation}\label{rule:static-core:value-declaration}
+  \vcenter{\infer{\C\ts\boxml{val}\ \tyvarseq\ \valbind\ra\VE'\ \In\ \Env}
+    {\deduce{\plusmap{\C}{\U}\ts\valbind\ra\VE}{U = \TyVarsFcn (\tyvarseq)}
+      & \VE'=\cl{\C,\valbind}{\VE}
+      & \U\cap\TyVarFcn\VE'=\emptyset}}
+\end{equation}
+Here $\VE$ will contain types rather than general type schemes. The
+closure of $\VE$ allows value identifiers to be used polymorphically,
+via Rule~\eqref{rule:static-core:value-variable}.
+
+The side-condition on $\U$ ensures that the type variables in
+$\tyvarseq$ are bound by the closure operation, if they occur free in
+the range of $\VE$.
+
+On the other hand,
+if the phrase $\boxml{val}\,\tyvarseq\,\valbind$ occurs inside
+some larger value binding $\boxml{val}\,\tyvarseq'\,\valbind'$
+then no type variable $\alpha$ listed in $\tyvarseq'$ will become
+bound by the $\cl{\C,\valbind}{\VE}$ operation; for $\alpha$ must 
+be in $\of{\U}{\C}$ and hence excluded from closure by the definition of the closure operation
+(Section~\ref{sec:closure}, \zref{defn:closing-value-environment}, page~\pageref{defn:closing-value-environment})
+since $\of{\U}{\C}\subseteq\TyVarFcn\C$.
+\end{sml-rule}
+
+\begin{sml-rule}{Type declaration}
+\begin{equation}\label{rule:static-core:type-declaration}
+\vcenter{\infer{\C\ts\typedec\ra\TE\ \In\ \Env}{\C\ts\typbind\ra\TE}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Datatype declaration}
+\begin{equation}\label{rule:static-core:datatype-declaration}
+  \vcenter{\infer{\C\ts\datatypedec\ra(\VE,\TE)\ \In\ \Env}
+    {\deduce{\mbox{$\TE$ maximises equality}}
+      {\deduce{\forall(\t,\VE')\in\Ran\TE,\ \t\notin(\of{\T}{\C})}
+        {\C\oplus\TE\ts\datbind\ra\VE,\TE}}}}
+\end{equation}
+The side conditions express that the elaboration of each datatype
+binding generates new type names and that as many of these new names as
+possible admit equality.  Adding $\TE$ to the context on the left of the
+$\ts$ captures the recursive nature of the binding.
+\end{sml-rule}
+
+\begin{sml-rule}{Datatype replication}
+\begin{equation}\label{rule:static-core:datatype-replication}
+  \vcenter{\infer{\C\ts\datatyperepldec\ra(\VE,\TE)\ \In\ \Env}
+    {\C(\longtycon) = (\typefcn,\VE)
+      & \TE=\{\tycon\mapsto(\typefcn,\VE)}}
+\end{equation}
+Note that no new type name is generated (i.e., datatype replication is
+not generative).
+\end{sml-rule}
+
+\begin{sml-rule}{Abstype declaration}
+\begin{equation}\label{rule:static-core:abstype-declaration}
+  \vcenter{\infer{\C\ts\abstypedec\ra\Abs(\TE,\E)}
+    {\deduce{\mbox{$\TE$ maximises equality}}
+      {\deduce{\C\oplus(\VE,\TE)\ts\dec\ra\E}
+        {\deduce{\forall(\t,\VE')\in\Ran\TE,\ \t\notin(\of{\T}{\C})}
+          {\C\oplus\TE\ts\datbind\ra\VE,\TE}}}}}
+\end{equation}
+The side conditions express that the elaboration of each datatype
+binding generates new type names and that as many of these new names as
+possible admit equality.  Adding $\TE$ to the context on the left of the
+$\ts$ captures the recursive nature of the binding.
+\end{sml-rule}
+
+\begin{sml-rule}{Exception declaration}
+\begin{equation}\label{rule:static-core:exception-declaration}
+  \vcenter{\infer{\C\ts\exceptiondec\ra\VE\ \In\ \Env}
+    {\C\ts\exnbind\ra\VE}}
+\end{equation}
+No closure operation is used here, as this would make the type system unsound.
+Example: {\tt exception E of 'a; val it = (raise E 5) handle E f => f(2)}~.
+\end{sml-rule}
+
+\begin{sml-rule}{Local declaration}
+\begin{equation}\label{rule:static-core:local-declaration}
+  \vcenter{\infer{\C\ts\localdec\ra\E_{2}}
+    {\C\ts\dec_{1}\ra\E_{1}
+      & \C\oplus\E_{1}\ts\dec_{2}\ra\E_{2}}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Open declaration}
+\begin{equation}\label{rule:static-core:open-declaration}
+  \vcenter{\infer{\C\ts\openstrdec\ra \E_{1} + \syndots + \E_{n}}
+    {\C(\longstrid_{1})= \E_{1} 
+      & \syndots
+      & \C(\longstrid_{n})= \E_{n}}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Empty declaration}
+\begin{equation}\label{rule:static-core:empty-declaration}
+\vcenter{\infer{\C\ts\emptydec\ra\emptymap\ \In\ \Env}{}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Sequential declaration}
+\begin{equation}\label{rule:static-core:sequential-declaration}
+  \vcenter{\infer{\C\ts\seqdec\ra\plusmap{E_{1}}{E_{2}}}
+    {\C\ts\dec_{1}\ra\E_{1}
+      & \C\oplus\E_{1}\ts\dec_{2}\ra\E_{2}}}
+\end{equation}
+\end{sml-rule}
+
+\rulesec{Value Bindings}{\C\ts\valbind\ra\VE}
+
+\begin{sml-rule}{Value binding}
+\begin{equation}\label{rule:static-core:value-binding}
+  \vcenter{\infer{\C\ts\longvalbind\ra\VE\ \optional{ +\ \VE'}}
+    {\C\ts\pat\ra(\VE,\tau)
+      & \C\ts\exp\ra\tau
+      & \optional{\C\ts\valbind\ra\VE'}}}
+\end{equation}
+When the option is present we have $\Dom\VE\cap \Dom\VE' = \emptyset$ by
+the syntactic restrictions~\zref{clause:syntax-core:restriction:no-repeated-identifiers}.
+\end{sml-rule}
+
+\begin{sml-rule}{Recursive value binding}
+\begin{equation}\label{rule:static-core:recursive-value-binding}
+  \vcenter{\infer{\C\ts\recvalbind\ra\VE}
+    {\C+\VE\ts\valbind\ra\VE
+      & \TyNamesFcn\VE\subseteq\of{\T}{\C}}}
+\end{equation}
+Modifying $\C$ by $\VE$ on the left captures the 
+recursive nature of the binding. From Rule~\eqref{rule:static-core:value-binding} we see that any
+type scheme occurring in $\VE$ will have to be a type. Thus each use of a
+recursive function in its own body must be assigned the same type.
+Also note that $\C+\VE$ may overwrite 
+identifier status. For example, the program
+    {\tt datatype t = f; val rec f = fn x => x;}~~  is legal.
+\end{sml-rule}
+
+\rulesec{Type Bindings}{\C\ts\typbind\ra\TE}
+
+\begin{sml-rule}{Type binding}
+\begin{equation}\label{rule:static-core:type-binding}
+  \vcenter{\infer{\C\ts\longtypbind\ra\{\tycon\mapsto(\typefcnk,\emptymap)\}\ \optional{+\ \TE}}
+    {\tyvarseq=\alphak\qquad\C\ts\ty\ra\tau
+      & \langle\C\ts\typbind\ra\TE\rangle}}
+\end{equation}
+The syntactic restrictions~(\oldS\oldS\ref{clause:syntax-core:restriction:no-repeated-identifiers}--\ref{clause:syntax-core:restriction:type-variables-uniqueness}) ensure that the type function
+$\typefcnk$ satisfies the well-formedness constraint of 
+Section~\ref{section:type-functions} and they ensure $tycon\notin\Dom\TE$.
+\end{sml-rule}
+
+\rulesec{Datatype Bindings}{\C\ts\datbind\ra\VE,\TE}
+
+\begin{sml-rule}{Datatype binding}
+\begin{equation}\label{rule:static-core:datatype-binding}
+  \vcenter{\infer{\deduce{\qquad\phantom{\C\ts}\qquad(\cl{}{\VE}\langle +\ \VE'\rangle,\
+        \{\tycon\mapsto(\t,\cl{}{\VE})\}\ \langle +\ \TE'\rangle)}{\C\ts\newlongdatbind\ra}}
+    {\deduce{\optional{\C\ts\datbind'\ra\VE',\TE'\qquad
+        \forall(\t',\VE'')\in\Ran\TE', \t\neq\t'}}
+      {\deduce{\arity\t=k}
+        {\deduce{\C,\alphakt\ts\constrs\ra\VE}
+          {\tyvarseq=\alphak}}}}}
+\end{equation}
+The syntactic restrictions~\zref{clause:syntax-core:restriction:no-repeated-identifiers} ensure $\Dom\VE\cap\Dom\VE' = \emptyset$
+and $\tycon\notin\Dom\TE'$.
+
+NOTE: there is a typo in the Definition, namely there is no closing
+right parentheses in the conclusion to this rule.
+\end{sml-rule}
+
+\rulesec{Constructor Bindings}{\C,\tau\ts\constrs\ra\VE}
+
+\begin{sml-rule}{Data constructors}
+\begin{equation}\label{rule:static-core:data-constructors}
+  \vcenter{\infer{\deduce{\qquad\qquad\qquad\{\vid\mapsto(\tau,\isc)\}\
+        \optional{+\ \{\vid\mapsto(\tau'\to\tau,\isc)\}\ }\
+        \optional{\optional{+\ \VE}}}
+      {\C,\tau\ts\longervidconstrs\ra}}
+    {\optional{\C\ts\ty\ra\tau'}
+  & \optional{\optional{\C,\tau\ts\constrs\ra\VE}}}}
+\end{equation}
+By the syntactic restrictions~\zref{clause:syntax-core:restriction:no-repeated-identifiers} $\vid\notin\Dom\VE$.
+\end{sml-rule}
+
+\rulesec{Exception Bindings}{\C\ts\exnbind\ra\VE}
+
+\begin{sml-rule}{Exception binding}
+\begin{equation}\label{rule:static-core:exnbind1}
+  \vcenter{\infer{\deduce{\qquad\{\vid\mapsto(\EXCN,\ise)\}\
+      \optional{+\ \{\vid\mapsto(\tau\rightarrow\EXCN,\ise)\}\ }\
+      \optional{\optional{ +\ \VE}}}
+      {\C\ts\longvidexnbinda\ra}}
+    {\optional{\C\ts\ty\ra\tau}
+  & \optional{\optional{\C\ts\exnbind\ra\VE}}}}
+\end{equation}
+Comments:
+\begin{enumerate}
+\item Notice that $\tau$ may contain type variables.
+\item For each $\C$ and $\exnbind$, there is at most one $\VE$
+  satisfying $\C\ts\exnbind\ra\VE$.
+\end{enumerate}
+\end{sml-rule}
+
+\begin{sml-rule}{Exception binding}
+\begin{equation}\label{rule:static-core:exnbind2}
+  \vcenter{\infer{\C\ts\longvidexnbindb\ra\{\vid\mapsto(\tau,\ise)\}\ \optional{+\ \VE}}
+    {\C(\longvid)=(\tau,\ise)
+      & \optional{\C\ts\exnbind\ra\VE}}}
+\end{equation}
+For each $\C$ and $\exnbind$, there is at most one $\VE$ satisfying
+$\C\ts\exnbind\ra\VE$.
+\end{sml-rule}
+
+\rulesec{Atomic Patterns}{\C\ts\atpat\ra(\VE,\tau)}
+
+\begin{sml-rule}{Wildcard pattern}
+\begin{equation}\label{rule:static-core:wildcard-pattern}
+\vcenter{\infer{\C\ts\wildcard\ra (\emptymap,\tau)}{}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Special constant in pattern}
+\begin{equation}\label{rule:static-core:atpat:scon}
+\vcenter{\infer{\C\ts\scon\ra (\emptymap,\scontype(\scon))}{}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Variable pattern}
+\begin{equation}\label{rule:static-core:variable-pattern}
+  \vcenter{\infer{\C\ts\vid\ra (\{\vid\mapsto(\tau,\isv)\},\tau)}
+    {\hbox{$\vid\notin\Dom(\C)$ or $\of{\is}{C(\vid)} = \isv$}}}
+\end{equation}
+The context $\C$ determines whether to apply this rule or the next rule.
+Note that $\vid$ can assume a type, not a general type scheme.
+\end{sml-rule}
+
+\begin{sml-rule}{Constant pattern}
+\begin{equation}\label{rule:static-core:constant-pattern}
+  \vcenter{\infer{\C\ts\longvid\ra (\emptymap,\tauk\t)}
+    {\C(\longvid)=(\sigma,\is)
+      & \is\neq\isv
+      & \sigma\succ\tauk\t}}
+\end{equation}
+The context $\C$ determines whether to apply this rule or the previous rule.
+\end{sml-rule}
+
+\begin{sml-rule}{Record pattern}
+\begin{equation}\label{rule:static-core:record-pattern}
+  \vcenter{\infer{\C\ts\lttbrace\ \recpat\ \rttbrace\ra(\ \emptymap\optional{ +\ \VE},\ \emptymap
+      \optional{ +\ \varrho}\ \In\ \Type\ )}
+    {\optional{\C\ts\labpats\ra(\VE,\varrho)}}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Parenthesised pattern}
+\begin{equation}\label{rule:static-core:paren-pattern}
+  \vcenter{\infer{\C\ts\parpat\ra(\VE,\tau)}
+    {\C\ts\pat\ra(\VE,\tau)}}
+\end{equation}
+\end{sml-rule}
+
+\rulesec{Pattern Rows}{\C\ts\labpats\ra(\VE,\varrho)}
+
+\begin{sml-rule}{Wildcard record}
+\begin{equation}\label{rule:static-core:wildcard-record}
+\vcenter{\infer{\C\ts\wildcardrow\ra(\emptymap,\varrho)}{}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Record component}
+\begin{equation}\label{rule:static-core:record-component}
+  \vcenter{\infer{\C\ts\longlabpats\ra
+     (\VE\optional{ +\ \VE'\rangle,\ \{\lab\mapsto\tau\}\langle +\ \varrho})}
+    {\deduce{\optional{\C\ts\labpats\ra(\VE',\varrho)\qquad\Dom\VE\cap\Dom\VE' = \emptyset}}
+      {\C\ts\pat\ra(\VE,\tau)}}}
+\end{equation}
+The syntactic restrictions~\zref{clause:syntax-core:restriction:no-repeated-labels-in-records} ensure $\lab\notin\Dom\varrho$.
+\end{sml-rule}
+
+\rulesec{Patterns}{\C\ts\pat\ra(\VE,\tau)}
+
+\begin{sml-rule}{Atomic pattern}
+\begin{equation}\label{rule:static-core:atomic-pattern}
+  \vcenter{\infer{\C\ts\atpat\ra (\VE,\tau)}
+    {\C\ts\atpat\ra (\VE,\tau)}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Construction pattern}
+\begin{equation}\label{rule:static-core:construction-pattern}
+  \vcenter{\infer{\C\ts\vidpat\ra (\VE,\tau)}
+    {\C(\longvid) = (\sigma, \is)
+      & \is\neq\isv\qquad \sigma\succ\tau'\to\tau
+      & \C\ts\atpat\ra(\VE,\tau')}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Typed pattern}
+\begin{equation}\label{rule:static-core:typed-pattern}
+  \vcenter{\infer{\C\ts\typedpat\ra (\VE,\tau)}
+    {\C\ts\pat\ra(\VE,\tau)
+      & \C\ts\ty\ra\tau}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Layered pattern}
+\begin{equation}\label{rule:static-core:layered-pattern}
+  \vcenter{\infer{\C\ts\layeredvidpat\ra(\plusmap{\{\vid\mapsto(\tau,\isv)\}}{\VE},\tau)}
+    {\deduce{\optional{\C\ts\ty\ra\tau}
+        \qquad \C\ts\pat\ra(\VE,\tau)
+      \qquad \vid\notin\Dom\VE
+      }
+      {\vid\notin\Dom(\C)\mbox{ or }\of{\is}{C(\vid)} = \isv}}}
+\end{equation}
+\end{sml-rule}
+
+\rulesec{Type Expressions}{\C\ts\ty\ra\tau}
+
+\begin{sml-rule}{Type variable}
+The name used in the \LaTeX\ comments for the Definition call this
+the ``atype variable'' rule --- I'm uncertain why ``atype'' is used
+(atomic type? Or because $\alpha$ in \SML\ is \verb|'a| as a type variable?)
+\begin{equation}\label{rule:static-core:type-variable}
+  \vcenter{\infer{\C\ts\tyvar\ra\alpha}
+    {\tyvar=\alpha}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Record type}
+\begin{equation}\label{rule:static-core:record-type}
+  \vcenter{\infer{\C\ts\lttbrace\ \rectype\ \rttbrace\ra\emptymap\optional{ +\ \varrho}\ \In\ \Type}
+    {\optional{\C\ts\labtys\ra\varrho}}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Constructed type}
+\begin{equation}\label{rule:static-core:constructed-type}
+  \vcenter{\infer{\C\ts\constype\ra\tauk\theta}
+    {\deduce{\C(\longtycon)=(\theta,\VE)}
+      {\tyseq=\ty_{1}\syndots\ty_{k}\qquad\C\ts\ty_{i}\ra\tau_{i}\ (1\leq i\leq k)}}}
+\end{equation}
+Recall that for $\tauk\theta$ to be defined, $\theta$ must have arity
+$k$.
+\end{sml-rule}
+
+\begin{sml-rule}{Function type}
+\begin{equation}\label{rule:static-core:function-type}
+  \vcenter{\infer{\C\ts\funtype\ra\tau\to\tau'}
+    {\C\ts\ty\ra\tau\qquad\C\ts\ty\,'\ra\tau'}}
+\end{equation}
+\end{sml-rule}
+
+\begin{sml-rule}{Parenthesised type}
+\begin{equation}\label{rule:static-core:parenthesised-type}
+  \vcenter{\infer{\C\ts\partype\ra\tau}
+    {\C\ts\ty\ra\tau}}
+\end{equation}
+\end{sml-rule}
+
+\rulesec{Type-expression Rows}{\C\ts\labtys\ra\varrho}
+
+\begin{sml-rule}{Record type components}
+\begin{equation}\label{rule:static-core:record-type-components}
+  \vcenter{\infer{\C\ts\longlabtys\ra\{\lab\mapsto\tau\}\optional{ +\ \varrho}}
+    {\C\ts\ty\ra\tau
+      & \optional{\C\ts\labtys\ra\varrho}}}
+\end{equation}
+The syntactic constraints ensure $\lab\notin\Dom\varrho$.
+\end{sml-rule}
+
+%% \begin{sml-rule}{}
+%% \begin{equation}\label{rule:static-core:}
+%% \vcenter{\infer{}{}}
+%% \end{equation}
+%% \end{sml-rule}
+
+\section{Further Restrictions}
+
+\begin{remark}{Additional impositions}
+In addition to the inference rules given above, there are three
+restrictions the Definition imposes. These all concern pattern matching,
+which would be tedious to write down using inference rules (and I, at
+least, would find them confusingly misplaced among typing rules).
+\end{remark}
+
+\begin{clause}{Record pattern must determine uniquely the set of labels}
+For each occurrence of a record pattern containing a record wildcard
+(i.e., of the form
+%\begin{quote}
+\verb+{+${\it lab}_{1}$\ml{=}$\pat_{1}$\ml{,}$\syndots$\ml{,}${\it lab}_{m}$\ml{=}$\pat_{m}$\ml{,}\wildcardrow\verb+}+)
+%\end{quote}
+the program context must determine uniquely the domain
+$\{{\it lab}_{1},\syndots,{\it lab}_{n}\}$
+of its row type, where $m\leq n$; thus, the context must
+determine the labels $\{{\it lab}_{m+1},\syndots,{\it lab}_{n}\}$ of the fields
+to be matched by the wildcard. For this purpose, an explicit type
+constraint may be needed.
+\end{clause}
+
+\begin{clause}{Irredundant patterns}\index{Pattern!Irredundant}\index{Pattern!Exhaustive}
+In a match of the form $\pat_{1}$ \ml{=>} $\exp_{1}$ \ml{|}$\;\syndots\;$
+\ml{|} $\pat_{n}$ \ml{=>} $\exp_{n}$ 
+the pattern sequence $\pat_{1},\ldots,\pat_{n}$ should be \emph{irredundant};
+that is, each $\pat_{j}$ must match some value
+(of the right type) which is not matched by $\pat_{i}$ for any $i<j$.
+
+In the context {\fnexp}, the $\match$ must also be \emph{exhaustive}; that is,
+every value (of the right type) must be matched by some $\pat_i$.
+
+The compiler must give warning on violation of these restrictions, 
+but should still compile the match. 
+
+The restrictions are inherited by derived forms; in particular,
+this means that in the function-value binding
+$\vid\ \atpat_{1}\ \syndots\ \atpat_{n}\langle : \ty\rangle$\ \ml{=}\ $\exp$
+(consisting of one clause only), each separate $\atpat_{i}$ should be
+exhaustive by itself.
+\end{clause}
+
+\begin{clause}{Warn about nonexhaustive patterns, but still compile}
+For each value binding $\pat\ \mbox{\ml{=}}\ \exp$ the compiler must
+issue a report (but still compile) if $\pat$ is not exhaustive.  This
+will detect a mistaken declaration like
+$\VAL\ \ml{nil}\ \mbox{\ml{=}}\ \exp$ in which the user expects to
+declare a new variable \ml{nil} (whereas the language dictates that
+\ml{nil} is here a constant pattern, so no variable gets declared).
+However, this warning should not be given when the binding is a
+component of a top-level declaration $\valdec$; e.g.
+$\VAL\ \mbox{\ml{x::l = }}\exp_{1}\ \mbox{\ml{\AND\ y = }}\exp_{2}$ is not
+faulted by the compiler at top level, but may of course generate a
+\ml{Bind} exception (see Section~6.5).
+\end{clause}
