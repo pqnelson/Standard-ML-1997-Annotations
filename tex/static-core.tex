@@ -471,7 +471,7 @@ Recall the convention for constructing finite maps by set
 comprehension~\zref{convention:static-core:finite-map-by-set-comprehesion},
 which is done here.
 
-Closing\index{24.3} a value environment $\VE$ that stems from
+Closing a value environment $\VE$ that stems from
 the elaboration of a value binding $\valbind$ requires extra
 care to ensure type security of references and exceptions and correct
 scoping of explicit type variables.
@@ -878,7 +878,8 @@ Example: {\tt exception E of 'a; val it = (raise E 5) handle E f => f(2)}~.
       & \optional{\C\ts\valbind\ra\VE'}}}
 \end{equation}
 When the option is present we have $\Dom\VE\cap \Dom\VE' = \emptyset$ by
-the syntactic restrictions~\zref{clause:syntax-core:restriction:no-repeated-identifiers}.
+the syntactic
+restrictions~(\oldS\oldS\ref{clause:syntax-core:restriction:no-repeated-identifiers}, \ref{clause:syntax-core:type-variable-restrictions-in-value-declarations}).
 \end{sml-rule}
 
 \begin{sml-rule}{Recursive value binding}
