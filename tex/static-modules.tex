@@ -1,0 +1,156 @@
+\chapter{Static Semantics for Modules}
+
+\section{Semantic Objects}
+
+\begin{clause}{Simple semantic objects}
+The simple semantic objects for Modules static semantics are exactly
+those for the Core from Section~\ref{sec:static-core:simple-objects}.
+\end{clause}
+
+\begin{definition}{Compound semantic objects}
+The compound objects are those for Core (Section~\ref{sec:static-core:compound-objects}),
+augmented by the following:
+\begin{align*}
+\sig\ {\rm or}\ \newlongsig{}
+                & \in    \Sig =  \TyNameSets\times\Env \\
+\funsig\ {\rm or}\ \newlongfunsig{}
+                & \in    \FunSig = \TyNameSets\times
+                                         (\Env\times\Sig)\\
+\G              & \in    \SigEnv        =       \finfun{\SigId}{\Sig} \\
+\F              & \in    \FunEnv        =       \finfun{\FunId}{\FunSig} \\
+\B\ {\rm or}\ \T,\F,\G,\E
+                & \in    \Basis = \TyNameSets\times
+                                              \FunEnv\times\SigEnv\times\Env
+\end{align*}
+The 
+prefix $(\T)$, in signatures and functor signatures, binds  type names.
+\end{definition}
+
+\begin{clause}{Projection, injection, modification}
+These operations are analogous `in the obvious way' to how they were
+defined for Core's static semantics.
+\end{clause}
+
+\begin{definition}{Context of basis}
+The Definition introduces the notation $\of{\C}{\B}$ to be the context
+$(\of{\T}{\B},\emptyset,\of{\E}{\B})$, i.e.~with an empty set of
+explicit type variables.
+\end{definition}
+
+\begin{definition}{Modifying a basis by an environment}
+We frequently need to modify a basis $\B$ by an environment $\E$
+(or a structure environment $\SE$ say),
+at the same time extending $\of{\T}{\B}$ to include the type names.
+We therefore define $\B\oplus\SE$, for example, to mean
+$\B+(\TyNamesFcn\SE,\SE)$.
+\end{definition}
+
+\begin{clause}{Structures not represented by semantic objects}
+There is no separate kind of semantic object to represent structures:
+structure expressions elaborate to environments, just as structure-level
+declarations do. Thus, notions which are commonly associated with
+structures (for example the notion of matching a structure against a
+signature) are defined in terms of environments.
+\end{clause}
+
+\section{Type Realisation}
+
+\begin{definition}{Type realisation, or simply just a ``realisation''}
+We define a \define{Type Realisation} is a map
+$\rea:\TyNames\to\TypeFcn$
+such that
+$\t$ and $\rea(\t)$ have the same arity, and
+if $t$ admits equality then so does $\rea(\t)$.
+\end{definition}
+
+\begin{definition}{Support of a type realisation}
+The \define{Support} $\Supp\rea$ of a type realisation $\rea$ is the set of
+type names $\t$ for which $\rea(\t)\ne\t$.
+\end{definition}
+
+\begin{definition}{Yield of a type realisation}
+The \define{Yield} $\Yield\rea$ of a realisation $\rea$ is the set of
+type names which occur in some $\rea(\t)$ for which $\t\in\Supp\rea$.
+\end{definition}
+
+\begin{clause}{Extend realisations to all semantic objects}
+Realisations $\rea$ are extended to apply to all semantic objects; their
+effect is to
+replace each name $\t$ by $\rea(\t)$. In applying $\rea$ to an object with
+bound names, such as a signature $\newlongsig{}$, first bound names must be
+changed so that, for each binding prefix $(\T)$,
+\begin{equation*}
+\T\cap(\Supp\rea\cup\Yield\rea)=\emptyset.
+\end{equation*}
+\end{clause}
+
+\section{Signature Instantiation}
+
+\begin{definition}{}
+An environment $\E_2$ is an \define{Instance} of a signature
+$\sig_1=\newlongsig{1}$,
+written $\siginst{\sig_1}{}{\E_2}$, if there exists a realisation
+$\rea$
+such that $\rea(\E_1)=\E_2$ and $\Supp\rea\subseteq\T_1$.
+\end{definition}
+
+\section{Functor Signature Instantiation}
+
+\begin{definition}{}
+A pair $(\E,(\T')\E')$ is called a \define{Functor Instance}.
+Given $\funsig=\newlongfunsig{1}$,
+a functor instance $(\E_2,(\T_2')\E_2')$ is an \define{Instance} of
+$\funsig$,
+written $\funsiginst{\funsig}{}{(\E_2,(\T_2')\E_2')}$,
+if there exists a realisation $\rea$
+such that
+$\rea(\E_1,(\T_1')\E_1')=(\E_2,(\T_2')\E_2')$ and
+$\Supp\rea\subseteq\T_1$.
+\end{definition}
+
+\section{Enrichment}
+
+\begin{clause}{}
+In matching an environment to a signature, the environment will be
+allowed both to have more components, and to be more polymorphic, than
+(an instance of) the signature. More precisely, we define enrichment of
+environments and type structures recursively as follows:
+\end{clause}
+
+\begin{definition}{Environment enrichment}
+An environment $\E_{1}=\newlongE{1}$ \define{Enriches} another environment
+$\E_{2} = \newlongE{2}$, written $\E_1\succ\E_2$,
+if
+\begin{enumerate}
+\item $\Dom\SE_1\supseteq\Dom\SE_2$, and $\SE_1(\strid)\succ\SE_2(\strid)$
+                                               for all $\strid\in\Dom\SE_2$
+\item $\Dom\TE_1\supseteq\Dom\TE_2$, and $\TE_1(\tycon)\succ\TE_2(\tycon)$
+                                               for all $\tycon\in\Dom\TE_2$
+\item $\Dom\VE_1\supseteq\Dom\VE_2$, and $\VE_1(\vid)\succ\VE_2(\vid)$
+                                               for all $\vid\in\Dom\VE_2$,
+where $(\sigma_1,\is_1)\succ(\sigma_2,\is_2)$ means $\sigma_1\succ\sigma_2$ and
+$$\is_1 = \is_2\quad\hbox{or}\quad \is_2 = \isv$$
+\end{enumerate}
+\end{definition}
+
+\begin{definition}{Type structure enrichment}
+Finally, a type structure $(\theta_{1},\VE_{1})$
+\define{Enriches} another type structure $(\theta_{2},\VE_{2})$,
+written $(\theta_{1},\VE_{1})\succ(\theta_{2},\VE_{2})$,
+if
+\begin{enumerate}
+\item $\theta_1=\theta_2$
+\item Either $\VE_{1}=\VE_{2}$ or $\VE_{2}=\emptymap$.
+\end{enumerate}
+\end{definition}
+
+\section{Signature Matching}
+
+\begin{definition}{Environment matches a signature}
+An environment $\E$ \define{Matches} a signature $\sig_{1}$ if there
+exists an environemnt $\E^{-}$ such that $\sig_{1}\geq E^{-}\prec E$.
+Thus matching is a combination of instantiation and enrichment. There is
+at most one such $\E^{-}$, given $\sig_{1}$ and $\E$.
+\end{definition}
+
+\section{Inference Rules}
