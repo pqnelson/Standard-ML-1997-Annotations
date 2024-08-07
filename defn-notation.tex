@@ -1,4 +1,4 @@
-\newcommand{\ml}[1]{{\tt #1}}
+\newcommand{\ml}[1]{\texttt{#1}}
 \newcommand{\boxml}[1]{\hbox{\tt #1}}
 \def\ignore#1{}
 \renewcommand{\cdots}{\mbox{$\cdot\!\cdot\!\cdot$}}
@@ -148,8 +148,8 @@
 \newcommand{\funsigexp}{\nonterminal{funsigexp}}
 \newcommand{\funspec}{\nonterminal{funspec}}
 \newcommand{\funtyp}{\nonterminal{funtyp}}
-\newcommand{\longstridk}{\strid_1.\cdots.\strid_k}
-\newcommand{\longtyconk}{\strid_1.\cdots.\strid_k.\tycon}
+\newcommand{\longstridk}{\strid_{1}.\syndots.\strid_{k}}
+\newcommand{\longtyconk}{\strid_{1}.\syndots.\strid_{k}.\tycon}
 \newcommand{\topdec}{\nonterminal{topdec}}
 \newcommand{\program}{\nonterminal{program}}
 \newcommand{\sigid}{\nonterminal{sigid}}
@@ -399,12 +399,12 @@
            {\boxml{$\strid\boxml{=}\strexp\ABSTRACT\sigexp\,\langle\boxml{and $\strbind$}\rangle$}}
 \newcommand{\barestrbinder}
            {\mbox{$\strid\ 
-            \ml{=} $\strexp\ \langle\langle\AND\ \strbind\rangle\rangle$}}
+            \ml{=} $\strexp\ \optional{\optional{\AND\ \strbind}}$}}
 \newcommand{\strbindera}
-           {\mbox{$\strid\ \langle$\ml{:}$\ \sigexp\rangle$
-            \ml{=} $\strexp\ \langle\AND\ \strbind\rangle$}}
+           {\mbox{$\strid\ $\optional{\ml{:}$\ \sigexp$}
+            \ml{=} $\strexp\ \optional{\AND\ \strbind}$}}
 \newcommand{\barestrbindera}
-           {\boxml{$\strid$ =  $\strexp$ $\langle\AND\ \strbind\rangle$}}
+           {\mbox{$\strid$ \texttt{=} $\strexp$ $\optional{\AND\ \strbind}$}}
 
 
         % structure expressions
@@ -413,8 +413,8 @@
 \newcommand{\funappdec}{\mbox{\funid\ \ml{(}\ \strdec\ \ml{)} }}
 \newcommand{\funappstr}{\mbox{\funid\ \ml{(}\ \strexp\ \ml{)} }}
 \newcommand{\letstrexp}{\mbox{\LET\ \strdec\ \IN\ \strexp\ \END}}
-\newcommand{\transpconstraint}{\boxml{$\strexp$:$\sigexp$}}
-\newcommand{\opaqueconstraint}{\boxml{$\strexp$\ABSTRACT$\sigexp$}}
+\newcommand{\transpconstraint}{\mbox{$\strexp$\texttt{:}$\sigexp$}}
+\newcommand{\opaqueconstraint}{\mbox{$\strexp$\texttt{\ABSTRACT}$\sigexp$}}
 
         % specifications
 
@@ -428,7 +428,7 @@
 \newcommand{\exceptionspec}{\mbox{\EXCEPTION\ \exndesc}}
 \newcommand{\structurespec}{\mbox{\STRUCTURE\ \strdesc}}
 \newcommand{\sharingspec}{\mbox{\SHARING\ \shareq}}
-\newcommand{\newsharingspec}{\boxml{$\spec$ sharing type $\longtycon_1$ = $\cdots$ = $\longtycon_n$}}
+\newcommand{\newsharingspec}{\mbox{$\spec$ \texttt{sharing type} $\longtycon_{1}$ \texttt{=} $\syndots$ \texttt{=} $\longtycon_{n}$}}
 \newcommand{\newsharingspecb}{\parbox[t]{4cm}{\boxml{$\spec$ sharing type}\hfill\break \boxml{\qquad$\longtycon_1$ = $\cdots$ = $\longtycon_n$}}}
 \newcommand{\wheretypespec}{\mbox{\spec\  \WHERETYPE\ \typabbr}}
 \newcommand{\localspec}{\mbox{$\LOCAL\ \spec_1\ \IN\ \spec_2\ \END$}}
@@ -514,7 +514,7 @@
         % signature expressions
 
 \newcommand{\encsigexp}{\mbox{\SIG\ \spec\ \END}}
-\newcommand{\wheretypesigexp}{\boxml{$\sigexp$ where type $\tyvarseq$ $\longtycon$ =  $\ty$}}
+\newcommand{\wheretypesigexp}{\mbox{$\sigexp$ \texttt{where type} $\tyvarseq$ $\longtycon$ =  $\ty$}}
 %\newcommand{\wheretypesigexpb}{\parbox[t]{5cm}{\boxml{$\sigexp$ where type }
 %                        \boxml{\qquad$\tyvarseq$ $\longtycon$ =  $\ty$}}}
 
@@ -565,10 +565,10 @@
 
             % topdec 
 
-\newcommand{\seqtopdec}{\boxml{$\topdec$ $\topdec$}}
-\newcommand{\strdecintopdec}{\boxml{$\hbox to12mm{\strdec}\;\langle\topdec\rangle$}}
-\newcommand{\fundecintopdec}{\boxml{$\hbox to12mm{\fundec}\;\langle\topdec\rangle$}}
-\newcommand{\sigdecintopdec}{\boxml{$\hbox to12mm{\sigdec}\;\langle\topdec\rangle$}}
+\newcommand{\seqtopdec}{\mbox{$\topdec$ $\topdec$}}
+\newcommand{\strdecintopdec}{\mbox{$\hbox to12mm{\strdec}\;\optional{\topdec}$}}
+\newcommand{\fundecintopdec}{\mbox{$\hbox to12mm{\fundec}\;\optional{\topdec}$}}
+\newcommand{\sigdecintopdec}{\mbox{$\hbox to12mm{\sigdec}\;\optional{\topdec}$}}
 
         %functor signature expressions
 
