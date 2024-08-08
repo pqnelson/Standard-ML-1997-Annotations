@@ -239,9 +239,12 @@ that the Definition further limits the possible identifiers we can
 shadow \emph{in general}.
 \end{comment}
 
-\begin{clause}{Top declaration restriction}
+\begin{clause}{Top declaration restriction}\label{clause:syntax-modules:top-declaration-restriction}
 No \nonterminal{topdec} may contain, as an initial segment, a
 \nonterminal{strdec} followed by a semicolon.
+(Rossberg~\cite{rossberg2018defects} observes that the \emph{intention}
+is to make parsing of top-level semicolons unambiguous, so that they
+always terminate a program.)
 \end{clause}
 
 \begin{comment}{Semicolons treated worse than a dead dog}

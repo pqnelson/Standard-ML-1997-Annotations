@@ -150,6 +150,29 @@ have occurred before the exception was raised.
 \end{equation}
 \end{inference-rule}
 
+\begin{remark}{Ambiguity in semicolons}
+Recall~\zref{clause:syntax-modules:top-declaration-restriction} ``No \nonterminal{topdec} may contain, as an initial segment, a
+\nonterminal{strdec} followed by a semicolon.'' Kahr~\cite[\oldS8.3]{kahrs1993mistakes}
+and Rossberg~\cite{rossberg2018defects} both point out this is a problem.
+
+Kahr points out that ``$\dec_{1}\texttt{;}\dec_{2}\texttt{;}\dec_{3}$''
+can be parsed in two different ways (at least), taking $\dec_{12}$ as $\dec_{1}\texttt{;}\dec_{2}$
+and $\dec_{23}$ as $\dec_{2}\texttt{;}\dec_{3}$, these evaluate to the
+same thing provided in rule~\ref{rule:static-core:sequential-declaration}
+and rule~\ref{rule:dynamic-core:sequential-declaration} we can have
+\begin{equation*}
+\C\oplus(\E_{1}\oplus\E_{2})=(\C\oplus\E_{1})\oplus\E_{2}.
+\end{equation*}
+Unfortunately, this does not hold, and the right-hand side of this
+equation can contain more type names than the one of the left-hand side.
+This means that the associativity of $\optional{\texttt{;}}$ is not obvious.
+
+Rossberg resolves this problem by having HaMLet's parser reduce to
+$\strdec$ as soon as possible (since this solves other problems as
+well). This seems to be the ``spirit of the Law'', even if the ``letter
+of the Law'' leaves much to be desired.
+\end{remark}
+
 \begin{definition}{Core language programs}
 A program is called a \define{Core Language Program} if it can be parsed
 in the reduced grammar defined as follows:
