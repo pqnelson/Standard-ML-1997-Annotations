@@ -477,16 +477,17 @@ Standard ML.
 
 \rulesec{Functor Bindings}{\B\ts\funbind\ra\F}
 % 182
+Note: we have fixed the typo reported by Rossberg~\cite{rossberg2018defects}.
 \begin{inference-rule}{Functor binding}
 \begin{equation}\label{rule:dynamic-modules:functor-binding}
 \vcenter{\infer{\begin{array}{c}
-      \IB\ts\barefunstrbinder\ \optfunbinda\ra\\
+      \B\ts\barefunstrbinder\ \optfunbinda\ra\\
       \qquad\qquad \qquad
       \{\funid\mapsto(\strid:\I,\strexp,\B)\}
       \ \optional{ +\ \F}
   \end{array}}
   {\Inter\B\ts\sigexp\ra\I
-   & \optional{\IB\ts\funbind\ra\F}}}
+   & \optional{\B\ts\funbind\ra\F}}}
 \end{equation}
 \end{inference-rule}
 
@@ -503,8 +504,11 @@ Standard ML.
 
 % 184
 \begin{inference-rule}{Structure-level declaration}
+Rossberg~\cite{rossberg2018defects} correctly identifies a typo in the
+conclusion: the Definition writes ``$\B'\optional{'}$'', but what it
+means is really ``$\B'\optional{+\B''}$''. We have fixed it here.
 \begin{equation}\label{rule:dynamic-modules:structure-level-declaration}
-\vcenter{\infer{\B\ts\strdecintopdec\ra\B'\optional{'}}
+\vcenter{\infer{\B\ts\strdecintopdec\ra\B'\optional{+\B''}}
   {\B\ts\strdec\ra\E
     &\B' =\E\ \In\ \Basis
     &\optional{ \B+\B'\ts\topdec\ra\B''} }}
@@ -513,8 +517,11 @@ Standard ML.
 
 % 185
 \begin{inference-rule}{Signature declaration}
+Rossberg~\cite{rossberg2018defects} correctly identifies a typo in the
+conclusion: the Definition writes ``$\B'\optional{'}$'', but what it
+means is really ``$\B'\optional{+\B''}$''. We have fixed it here.
 \begin{equation}\label{rule:dynamic-modules:signature-declaration}
-\vcenter{\infer{\B\ts\sigdecintopdec\ra \B'\optional{'}}
+\vcenter{\infer{\B\ts\sigdecintopdec\ra \B'\optional{+\B''}}
   {\Inter\B\ts\sigdec\ra\G
     & B' = \G\ \In\ \Basis
     & \optional{ \B + \B'\ts\topdec\ra\B''}}}
@@ -523,8 +530,11 @@ Standard ML.
 
 % 186
 \begin{inference-rule}{Functor [top] declaration}
+Rossberg~\cite{rossberg2018defects} correctly identifies a typo in the
+conclusion: the Definition writes ``$\B'\optional{'}$'', but what it
+means is really ``$\B'\optional{+\B''}$''. We have fixed it here.
 \begin{equation}\label{rule:dynamic-modules:functor-top-declaration}
-\vcenter{\infer{\B\ts\fundecintopdec\ra\B'\optional{'}}
+\vcenter{\infer{\B\ts\fundecintopdec\ra\B'\optional{+\B''}}
   {\B\ts\fundec\ra\F
     & \B' = \F\ \In\ \Basis
     & \optional{ \B + \B'\ts\topdec\ra\B''}}}
