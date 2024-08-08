@@ -1,0 +1,532 @@
+\chapter{Dynamic Semantics for Modules}
+
+\section{Reduced Syntax}
+
+\begin{clause}{}
+The syntax for Modules is reduced in the following manner, \emph{in addition}
+to the reduced syntax made for Core.
+\end{clause}
+
+\begin{clause}{Omit qualifications from descriptions}
+Qualifications ``\texttt{of} $\ty$'' are omitted from constructor and
+exception descriptions.
+\end{clause}
+
+\begin{clause}{Omit sharing/where type qualifications}
+Any qualification ``\texttt{sharing type} $\syndots$'' on a specification,
+or ``\texttt{where type} $\syndots$'' on a signature expression, both
+are omitted. 
+\end{clause}
+
+\section{Compound Objects}\label{sec:dynamic-modules:compound-objects}
+
+\begin{definition}{Compound objects}\label{defn:dynamic-modules:compound-objects}
+The compound objects for the Modules dynamic semantics, in addition to
+those for the Core dynamic semantics, are listed below:
+\begin{equation*}
+\begin{array}{rcl}
+(\strid:\I,\strexp,\B)
+                & \in   & \FunctorClosure = (\StrId\times\Int)\times\StrExp\times\Basis\\
+%                &       & \qquad  = (\StrId\times\Int)\times\StrExp\times\Basis\\
+\I\ {\rm or}\ (\SI,\TI,\VI)
+                & \in   & \Int = \StrInt\times\TyInt\times\ValInt\\
+        \SI     & \in   & \StrInt = \finfun{\StrId}{\Int}\\
+        \TI     & \in   & \TyInt =  \finfun{\TyCon}{\ValInt}\\
+        \VI     & \in   & \ValInt = \finfun{\VId}{\IdStatus}\\ 
+        \G      & \in   & \SigEnv = \finfun{\SigId}{\Int}\\
+        \F      & \in   & \FunEnv = \finfun{\FunId}{\FunctorClosure}\\
+(\F,\G,\E)\ {\rm or}\ \B
+                & \in   & \Basis = \FunEnv\times\SigEnv\times\Env\\
+(\G,\I)\ {\rm or}\ \IB
+                & \in   & \IntBasis = \SigEnv\times\Int
+\end{array}
+\end{equation*}
+\end{definition}
+
+\begin{definition}{Interface}
+An \define{Interface} $\I\in\Int$ represents a ``view'' of a structure.
+\end{definition}
+
+
+\begin{clause}{Signatures evaluate to interfaces}
+Specifications and signature expressions will evaluate to interfaces;
+moreover, during the evaluation of a specification or signature expression, 
+structures (to which a specification or signature expression may
+refer via datatype replicating specifications) are represented 
+only by their interfaces.
+\end{clause}
+
+\begin{definition}{Extracting an interface from an environment}
+To extract a value interface from
+a dynamic value environment we define the operation $\Inter: \ValEnv \to\ValInt$
+as follows:
+\begin{equation*}
+\Inter(\VE) = \{\vid\mapsto\is\;;\;\VE(\vid) = (\V,\is)\}
+\end{equation*}
+In other words, $\Inter(\VE)$ is the value interface obtained from $\VE$ by
+removing all values from $\VE$.
+
+We then extend $\Inter$ to a function $\Inter:\Env\to\Int$ as follows:
+\begin{equation*}
+\Inter(\SE,\TE,\VE)\ =\ (\SI,\TI,\VI)
+\end{equation*}
+where $\VI$ = $\Inter(\VE)$ and 
+\begin{align*}
+\SI &= \{\strid\mapsto\Inter\E\;;\;\SE(\strid) = \E\}\\
+\TI &= \{\tycon\mapsto\Inter\VE'\;;\;\TE(\tycon) = \VE'\}
+\end{align*}
+\end{definition}
+
+\begin{definition}{Interface basis}
+An \define{Interface Basis} $\IB=(\G,\I)$ is a value-free part of a
+basis, sufficient to evaluate signature expressions and specifications.
+\end{definition}
+
+
+\begin{clause}{Extending Inter to create interface bases}
+The function $\Inter$ is extended to create an interface basis
+from a basis $\B$ as follows:
+\begin{equation*}
+\Inter(\F,\G,\E)\ =\ (\G, \Inter\E)
+\end{equation*}
+\end{clause}
+
+\begin{definition}{Cutting down an environment to an interface}
+A further operation
+\[ \downarrow\ :\ \Env\times\Int\to\Env\]
+is required, to cut down an environment $\E$ to a given interface $\I$,
+representing the effect of an explicit signature ascription. We first
+define $\downarrow: \ValEnv\times\ValInt\to\ValEnv$ by
+\[\VE\downarrow\VI = \{\vid\mapsto(\V,\is)\;;\;\VE(\vid) = (\V,\is')\ {\rm and}\ \VI(\vid) = \is\}\]
+(Note that $\VE$ and $\VI$ need not have the same
+domain and that the identifier status is taken from $\VI$.) 
+We then define $\downarrow: \StrEnv \times \StrInt \to \StrEnv$,
+$\downarrow: \TyEnv \times\TyInt\to\TyEnv$ and
+$\downarrow: \Env\times\Int\to\Env$ simultaneously as
+follows:\footnote{Note: there is a typo in the third equation 
+$(\SE,\TE,\VE)\downarrow(\SI,\TI,\VI)$
+which the Definition, as printed, reads erroneously as
+$(\SE,\TE,\VE)\downarrow(\SI,\TE,\VI)$.}
+\label{downarrowdef}
+\begin{equation*}
+\SE\downarrow\SI  =  \{\strid\mapsto\E\downarrow\I\ ;\
+          	\SE(\strid)=\E\ {\rm and}\ \SI(\strid)=\I\}
+\end{equation*}
+\begin{equation*}
+\TE\downarrow\TI =  \{\tycon\mapsto \VE'\downarrow\VI'\ ;\ 
+               \TE(\tycon) = \VE'\ {\rm and}\ \TI(\tycon) = \VI'\}
+\end{equation*}
+\begin{equation*}
+(\SE,\TE,\VE)\downarrow(\SI,\TI,\VI)  = 
+               (\SE\downarrow\SI, \TE\downarrow\TI, \VE\downarrow\VI)
+\end{equation*}
+\end{definition}
+
+\begin{clause}{Static elaboration naturally implements interfaces}
+It is important to note that an interface can also be obtained from the
+\emph{static} value $\Sigma$ of a signature expression; 
+it is obtained by first replacing every type
+structure $(\typefcn, \VE)$
+in the range of every type environment $\TE$ by $\VE$
+and then replacing each pair $(\sigma,\is)$ in the range of every value
+environment $\VE$ by $\is$.
+
+Thus in an implementation interfaces would naturally be obtained from the
+static elaboration; we choose to give separate rules here for obtaining them
+in the dynamic semantics since we wish to maintain our separation of the
+static and dynamic semantics, for reasons of presentation.
+\end{clause}
+
+\section{Inference Rules}
+
+\begin{definition}{Judgement form}
+The\index{59.2} semantic rules allow sentences  of the form
+\begin{equation*}
+\s,A\ts\phrase\ra A',\s'
+\end{equation*}
+to be inferred, where $A$ is either a basis, a signature environment, or
+empty; $A'$ is some semantic object; and $s$, $s'$ are states before and
+after the evaluation represented by the judgement.
+\end{definition}
+
+\begin{definition}{Side-conditions}
+Some hypotheses in rules are not of this form; they are called
+\define{side-conditions}.
+\end{definition}
+
+\begin{convention}{Options same as for Core}
+The conventions for options are the same as for Core (those in single
+brackets are all taken together, or none are taken together; separately,
+those in double brackets are all taken together, or none are taken).
+\end{convention}
+
+\begin{convention}{State and exception conventions}
+The state convention~\zref{convention:dynamic-convention:state} and
+exception convention~\zref{convention:dynamic-convention:exception} are
+adopted as in the Core dynamics. However, it may be shown that the only
+Modules phrases whose evaluation may cause a side-effect or generate an
+exception packet are of the form $\strexp$, $\strdec$, $\strbind$ or
+$\topdec$.
+\end{convention}
+
+\rulesec{Structure Expressions}{\B\ts\strexp\ra \E/\p}
+
+% 150
+\begin{inference-rule}{Generative structure expression}
+\begin{equation}\label{rule:dynamic-modules:generative-structure-expression}
+\vcenter{\infer{\B\ts\encstrexp\ra\E}
+  {\B\ts\strdec\ra\E}}
+\end{equation}
+\end{inference-rule}
+
+% 151
+\begin{inference-rule}{Structure long id}
+\begin{equation}\label{rule:dynamic-modules:longstrid}
+\vcenter{\infer{\B\ts\longstrid\ra\E}
+  {\B(\longstrid)=\E}}
+\end{equation}
+\end{inference-rule}
+
+% 152
+\begin{inference-rule}{Transparent signature constraint}
+\begin{equation}\label{rule:dynamic-modules:transparent-signature-constraint}
+\vcenter{\infer{\B\ts\transpconstraint\ra\E\downarrow\I}
+  {\B\ts\strexp\ra\E
+    & \Inter\B\ts\sigexp\ra\I}}
+\end{equation}
+\end{inference-rule}
+
+% 153
+\begin{inference-rule}{Opaque signature constraint}
+\begin{equation}\label{rule:dynamic-modules:opaque-signature-constraint}
+\vcenter{\infer{\B\ts\opaqueconstraint\ra\E\downarrow\I}
+  {\B\ts\strexp\ra\E
+    & \Inter\B\ts\sigexp\ra\I}}
+\end{equation}
+\end{inference-rule}
+
+% 154
+\begin{inference-rule}{Functor application}
+\begin{equation}\label{rule:dynamic-modules:functor-application}
+\vcenter{\infer{\B\ts\funappstr\ra\E'}
+  {\begin{array}{c}
+      \B(\funid)=(\strid:\I,\strexp',\B')\\
+      \B\ts\strexp\ra\E\qquad
+      \B'+\{\strid\mapsto\E\downarrow\I\}\ts\strexp'\ra\E'\\
+   \end{array}}}
+\end{equation}
+Before the evaluation of the functor body $\strexp'$, the
+actual argument $\E$ is cut down by the formal parameter
+interface $\I$, so that any opening of $\strid$ resulting
+from the evaluation of $\strexp'$ will produce no more components
+than anticipated during the static elaboration.
+\end{inference-rule}
+
+% 155
+\begin{inference-rule}{Let-structure expression}
+\begin{equation}\label{rule:dynamic-modules:let-structure-expression}
+\vcenter{\infer{\B\ts\letstrexp\ra\E'}
+  {\B\ts\strdec\ra\E
+    &\B+\E\ts\strexp\ra\E'}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Structure-level Declarations}{\B\ts\strdec\ra\E/\p}
+
+% 156
+\begin{inference-rule}{Core declaration}
+\begin{equation}\label{rule:dynamic-modules:core-declaration}
+\vcenter{\infer{\B\ts\dec\ra\E'}
+  {\of{\E}{\B}\ts\dec\ra\E'}}
+\end{equation}
+\end{inference-rule}
+
+\begin{remark}{For the ``Core fragment'' of ML}
+We can ignore the next two rules, and use these structure-level
+declarations rules to describe the dynamics of the ``Core'' fragment of
+Standard ML.
+\end{remark}
+
+% 157
+\begin{inference-rule}{Structure declaration}
+\begin{equation}\label{rule:dynamic-modules:structure-declaration}
+\vcenter{\infer{\B\ts\singstrdec\ra\SE\ \In\ \Env}
+  {\B\ts\strbind\ra\SE}}
+\end{equation}
+\end{inference-rule}
+
+% 158
+\begin{inference-rule}{Local structure declaration}
+\begin{equation}\label{rule:dynamic-modules:local-structure-declaration}
+\vcenter{\infer{\B\ts\localstrdec\ra\E_{2}}
+  {\B\ts\strdec_{1}\ra\E_{1}
+    & \B+\E_{1}\ts\strdec_{2}\ra\E_{2}}}
+\end{equation}
+\end{inference-rule}
+
+% 159
+\begin{inference-rule}{Empty declaration}
+\begin{equation}\label{rule:dynamic-modules:empty-declaration}
+\vcenter{\infer{\B\ts\emptystrdec\ra \emptymap{\rm\ in}\ \Env}
+  {}}
+\end{equation}
+\end{inference-rule}
+
+% 160
+\begin{inference-rule}{Sequential declaration}
+\begin{equation}\label{rule:dynamic-modules:sequential-declaration}
+\vcenter{\infer{\B\ts\seqstrdec\ra\plusmap{\E_{1}}{\E_{2}}}
+  {\B\ts\strdec_{1}\ra\E_{1}
+    & \B+\E_{1}\ts\strdec_{2}\ra\E_{2}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Structure Bindings}{\B\ts\strbind\ra\SE/\p}
+
+% 161
+\begin{inference-rule}{Structure binding}
+\begin{equation}\label{rule:dynamic-modules:structure-binding}
+\vcenter{\infer{\B\ts\barestrbindera\ra\{\strid\mapsto\E\}
+                \ \optional{ +\ \SE}}
+  {\B\ts\strexp\ra\E
+    & \optional{\B\ts\strbind\ra\SE}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Signature Expressions}{\IB\ts\sigexp\ra\I}
+% 162
+\begin{inference-rule}{Encapsulation signature expressions}
+\begin{equation}\label{rule:dynamic-modules:encapsulating-sigexp}
+\vcenter{\infer{\IB\ts\encsigexp\ra\I}
+  {\IB\ts\spec\ra\I}}
+\end{equation}
+\end{inference-rule}
+
+% 163
+\begin{inference-rule}{Signature identifier}
+\begin{equation}\label{rule:dynamic-modules:signature-identifier}
+\vcenter{\infer{\IB\ts\sigid\ra\I}
+  {\IB(\sigid)=\I}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Signature Declarations}{\IB\ts\sigdec\ra\G}
+
+
+% 164
+\begin{inference-rule}{Single signature declaration}
+\begin{equation}\label{rule:dynamic-modules:single-signature-declaration}
+\vcenter{\infer{\IB\ts\singsigdec\ra\G}
+  {\IB\ts\sigbind\ra\G}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Signature Bindings}{\IB\ts\sigbind\ra\G}
+
+% 165
+\begin{inference-rule}{Signature binding}
+\begin{equation}\label{rule:dynamic-modules:signature-binding}
+\vcenter{\infer{\IB\ts\sigbinder\ra\{\sigid\mapsto\I\}
+       \ \optional{ +\ \G}}
+  {\IB\ts\sigexp\ra\I
+    &\optional{\IB\ts\sigbind\ra\G}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Specifications}{\IB\ts\spec\ra\I}
+
+% 166
+\begin{inference-rule}{Value specification}
+\begin{equation}\label{rule:dynamic-modules:value-specification}
+\vcenter{\infer{\ts\valdesc\ra\VI}
+  {\IB\ts\valspec\ra\VI\ \In\ \Int}}
+\end{equation}
+\end{inference-rule}
+
+% 167
+\begin{inference-rule}{Type specification}
+\begin{equation}\label{rule:dynamic-modules:type-spec}
+\vcenter{\infer{\IB\ts\typespec\ra\TI\ \In\ \Int}
+  {\ts\typdesc\ra\TI}}
+\end{equation}
+\end{inference-rule}
+
+% 168
+\begin{inference-rule}{Equality type specification}
+\begin{equation}\label{rule:dynamic-modules:eqtype-specification}
+\vcenter{\infer{\IB\ts\eqtypespec\ra\TI\ \In\ \Int}
+  {\ts\typdesc\ra\TI}}
+\end{equation}
+\end{inference-rule}
+
+% 169
+\begin{inference-rule}{Datatype specification}
+\begin{equation}\label{rule:dynamic-modules:datatype-specification}
+\vcenter{\infer{\IB\ts\datatypespec\ra(\VI,\TI)\ \In\ \Int}
+  {\ts\datdesc\ra\VI,\TI}}
+\end{equation}
+\end{inference-rule}
+
+% 170
+\begin{inference-rule}{Datatype replication specification}
+\begin{equation}\label{rule:dynamic-modules:datatype-replication-specification}
+\vcenter{\infer{\IB\ts\datatypereplspec\ra(\VI,\TI)\ \In\ \Int}
+  {\IB(\longtycon) = \VI
+    & \TI = \{\tycon\mapsto\VI\}}}
+\end{equation}
+\end{inference-rule}
+
+% 171
+\begin{inference-rule}{Exception specification}
+\begin{equation}\label{rule:dynamic-modules:exception-specification}
+\vcenter{\infer{\IB\ts\exceptionspec\ra \VI\ \In\ \Int}
+  {\ts\exndesc\ra\VI}}
+\end{equation}
+\end{inference-rule}
+
+% 172
+\begin{inference-rule}{Structure specification}
+\begin{equation}\label{rule:dynamic-modules:structure-specification}
+\vcenter{\infer{\IB\ts\structurespec\ra\SI\ \In\ \Int}
+  {\IB\ts\strdesc\ra\SI}}
+\end{equation}
+\end{inference-rule}
+
+% 173
+\begin{inference-rule}{Include signature specification}
+\begin{equation}\label{rule:dynamic-modules:include-signature-spec}
+\vcenter{\infer{\IB\ts\singleinclspec\ra\I}
+  {\IB\ts\sigexp\ra\I}}
+\end{equation}
+\end{inference-rule}
+
+% 174
+\begin{inference-rule}{Empty specification}
+\begin{equation}\label{rule:dynamic-modules:empty-specification}
+\vcenter{\infer{\IB\ts\emptyspec\ra\emptymap{\rm\ in}\ \Int}
+  {}}
+\end{equation}
+\end{inference-rule}
+
+% 175
+\begin{inference-rule}{Sequential specification}
+\begin{equation}\label{rule:dynamic-modules:sequential-spec}
+\vcenter{\infer{\IB\ts\seqspec\ra\plusmap{\I_{1}}{\I_{2}}}
+  {\IB\ts\spec_{1}\ra\I_{1}
+    & \IB+\I_{1}\ts\spec_{2}\ra\I_{2}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Value Descriptions}{\ts\valdesc\ra\VI}
+
+% 176
+\begin{inference-rule}{Value description}
+\begin{equation}\label{rule:dynamic-modules:value-description}
+\vcenter{\infer{\ts\vid\ \optional{\AND\ \valdesc}\ra
+       \{\vid\mapsto\isv\}\ \optional{+\,\VI}}
+  {\optional{\ts\valdesc\ra\VI}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Type Descriptions}{\ts\typdesc\ra\TI}
+% 177
+\begin{inference-rule}{Type description}
+\begin{equation}\label{rule:dynamic-modules:type-description}
+\vcenter{\infer{\ts\typdescription\ra\{\tycon\mapsto\emptymap\}\optional{+\TI}}
+  {\optional{\ts\typdesc\ra\TI}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Datatype Descriptions}{\ts\datdesc\ra\VI, \TI}
+% 178
+\begin{inference-rule}{Datatype description}
+\begin{equation}\label{rule:dynamic-modules:datatype-description}
+\vcenter{\infer{\ts\datdescriptiona\ra\VI\,\optional{+\,\VI'}, \{\tycon\mapsto\VI\}\optional{+\TI'}}
+  {\ts\condesc\ra\VI
+    & \optional{\ts\datdesc'\ra\VI',\TI'}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Constructor Descriptions}{\ts\condesc\ra\VI}
+% 179
+\begin{inference-rule}{Constructor description}
+\begin{equation}\label{rule:dynamic-modules:constructor-description}
+\vcenter{\infer{\ts\shortconviddesc\ra\{\vid\mapsto\isc\}\,\optional{+\VI}}
+  {\optional{\ts\condesc\ra\VI}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Exception Descriptions}{\ts\exndesc\ra\VI}
+% 180
+\begin{inference-rule}{}
+\begin{equation}\label{rule:dynamic-modules:exception-description}
+\vcenter{\infer{ \ts\vid\ \optional{\boxml{and\ }\exndesc}\ra\{\vid\mapsto\ise\}\ \optional{+ \VI} }
+  { \optional{\ts\exndesc\ra\VI} }}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Structure Descriptions}{\IB\ts\strdesc\ra\SI}
+% 181
+\begin{inference-rule}{Structure description}
+\begin{equation}\label{rule:dynamic-modules:structure-description}
+\vcenter{\infer{ \IB\ts\strdescription\ra\{\strid\mapsto\I\}\ \optional{ +\ \SI} }
+  { \IB\ts\sigexp\ra\I
+    & \optional{\IB\ts\strdesc\ra\SI} }}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Functor Bindings}{\B\ts\funbind\ra\F}
+% 182
+\begin{inference-rule}{Functor binding}
+\begin{equation}\label{rule:dynamic-modules:functor-binding}
+\vcenter{\infer{\begin{array}{c}
+      \IB\ts\barefunstrbinder\ \optfunbinda\ra\\
+      \qquad\qquad \qquad
+      \{\funid\mapsto(\strid:\I,\strexp,\B)\}
+      \ \optional{ +\ \F}
+  \end{array}}
+  {\Inter\B\ts\sigexp\ra\I
+   & \optional{\IB\ts\funbind\ra\F}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Functor Declarations}{\B\ts\fundec\ra\F}
+% 183
+\begin{inference-rule}{Functor declaration}
+\begin{equation}\label{rule:dynamic-modules:functor-declaration}
+\vcenter{\infer{ \B\ts\singfundec\ra\F }
+  { \B\ts\funbind\ra\F }}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Top-level Declarations}{\B\ts\topdec\ra\B'/\p}
+
+% 184
+\begin{inference-rule}{Structure-level declaration}
+\begin{equation}\label{rule:dynamic-modules:structure-level-declaration}
+\vcenter{\infer{\B\ts\strdecintopdec\ra\B'\optional{'}}
+  {\B\ts\strdec\ra\E
+    &\B' =\E\ \In\ \Basis
+    &\optional{ \B+\B'\ts\topdec\ra\B''} }}
+\end{equation}
+\end{inference-rule}
+
+% 185
+\begin{inference-rule}{Signature declaration}
+\begin{equation}\label{rule:dynamic-modules:signature-declaration}
+\vcenter{\infer{\B\ts\sigdecintopdec\ra \B'\optional{'}}
+  {\Inter\B\ts\sigdec\ra\G
+    & B' = \G\ \In\ \Basis
+    & \optional{ \B + \B'\ts\topdec\ra\B''}}}
+\end{equation}
+\end{inference-rule}
+
+% 186
+\begin{inference-rule}{Functor [top] declaration}
+\begin{equation}\label{rule:dynamic-modules:functor-top-declaration}
+\vcenter{\infer{\B\ts\fundecintopdec\ra\B'\optional{'}}
+  {\B\ts\fundec\ra\F
+    & \B' = \F\ \In\ \Basis
+    & \optional{ \B + \B'\ts\topdec\ra\B''}}}
+\end{equation}
+\end{inference-rule}
