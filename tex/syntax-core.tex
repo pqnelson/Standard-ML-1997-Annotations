@@ -566,6 +566,40 @@ Rossberg cites Kahrs~\cite[\S8.3]{kahrs1993mistakes} for this second
 ambiguity, which Kahrs expands upon with several more severe ambiguities.
 \end{remark}
 
+\begin{remark}{Proposed alternative grammar for declarations}
+It seems to me the correct grammar for declarations should be to
+introduce a syntactic class for `atomic declarations' ``$adec$'',
+another syntactic class for a [possibly semicolon separated,
+  right associative\footnote{HaMLet parses sequences of declarations as
+  left associative, according to \oldS4.4 of its documentation.}] sequence of atomic declarations ``$adecseq$'', and
+then just make ``$dec$'' either empty or an $adecseq$:
+\begin{longtable}{rcll}
+\phantomsection\label{grammar:proposal:adec}\nonterminal{adec} & $::=$ & \texttt{val}
+\nonterminal{tyvarseq} \nonterminal{valbind} & value declaration\\
+&\alt&\texttt{type} \nonterminal{typbind} & type declaration\\
+&\alt&\texttt{datatype} \nonterminal{datbind} & datatype declaration\\
+&\alt&\texttt{datatype} \nonterminal{tycon} \texttt{-=-} \texttt{datatype} \nonterminal{longtycon}
+& datatype replication\\
+&\alt&\texttt{abstype} \nonterminal{datbind} \texttt{with} \nonterminal{dec} \texttt{end} &
+abstype declaration\\
+&\alt&\texttt{exception} \nonterminal{exbind} & exception declaration\\
+&\alt&\texttt{local} $dec_{1}$ \texttt{in} $dec_{2}$ \texttt{end} &
+local declaration\\
+&\alt&\texttt{open} $longstrid_{1}$ $\syndots$ $longstrid_{n}$ & open
+declaration ($n\geq1$)\\
+&\alt&\texttt{infix} \optional{\textit{d}} $vid_{1}$ $\syndots$ $vid_{n}$
+&infix (L) directive\\
+&\alt&\texttt{infixr} \optional{\textit{d}} $vid_{1}$ $\syndots$ $vid_{n}$
+&infix (R) directive\\
+&\alt&\texttt{nonfix} \optional{\textit{d}} $vid_{1}$ $\syndots$ $vid_{n}$
+&nonfix directive\\
+\nonterminal{adecseq} & $::=$ & $adec$ \optional{\texttt{;}} & a single declaration\\
+                      &  \alt & $adec$ \optional{\texttt{;}} $adecseq$ & sequential declarations\\
+\nonterminal{dec} & $::=$ & &empty declaration\\
+                  &  \alt &$adecseq$ & sequential declarations\\
+\end{longtable}
+\end{remark}
+
 \section{Syntactic restrictions}\label{sec:syntax-core:syntactic-restrictions}
 
 \begin{clause}{No repeated labels in records}\label{clause:syntax-core:restriction:no-repeated-labels-in-records}
