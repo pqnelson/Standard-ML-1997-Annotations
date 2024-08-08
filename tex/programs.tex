@@ -1,0 +1,166 @@
+\chapter{Programs}
+
+
+\begin{definition}{Syntactic class of programs}
+The phrase class Program of programs is defined as follows
+\begin{equation*}
+\program ::= \longprog
+\end{equation*}
+\end{definition}
+
+\begin{clause}{Inclusion of files is implementation-dependent}
+The Definition observes that sometimes the Standard ML compiler will be
+reading in a file, and at other times we will be working with a REPL. In
+either case, if an error is found, we should wish to avoid creating a
+distinction between, say, batch programs and interactive programs, and
+so the Definition tacitly regards all programs as interactive. This
+leaves it to implementers to clarify the inclusion of files.  
+
+Specifically, how including files affects updating the static and
+dynamic basis --- this is implementation dependent behaviour.
+\end{clause}
+
+\begin{clause}{Parsing error reporting is implementation dependent}
+How parsing errors are handled is left to the implementers (since it
+depends on the kind of parser employed).
+\end{clause}
+
+\begin{clause}{Execution of programs}
+In this section, the \define{Execution} of a program means the combined
+elaboration and evaluation of the program.
+\end{clause}
+
+\begin{definition}{Class of Basis, StaticBasis, DynamicBasis}
+The Definition wishes to disambiguate the usage of $\B$ for bases (since
+it was used as the metavariable for both static and dynamic bases).
+For ease of discussion, the Definition does the following:
+\begin{enumerate}
+\item In giving the semantics of programs, however, let us rename as 
+\mbox{StaticBasis} the class  Basis defined in the static
+semantics of modules~\zref{defn:static-modules:compound-objects}, Section~\ref{sec:static-modules:compound-objects},
+and let us use $\Bstat$ to range over StaticBasis.
+\item Let us rename as  \mbox{DynamicBasis} the class Basis defined in the
+dynamic semantics of modules~\zref{defn:dynamic-modules:compound-objects}, Section~\ref{sec:dynamic-modules:compound-objects},
+and let us use $\Bdyn$ to range over \mbox{DynamicBasis}.
+\item We now define
+  \begin{equation*}
+\B\ {\rm or} \ (\Bstat,\Bdyn)\in{\rm Basis}={\rm Static Basis}
+\times {\rm DynamicBasis}.
+  \end{equation*}
+\end{enumerate}
+\end{definition}
+
+\begin{definition}{Judgement forms}
+The Definition uses $\tsstat$ for elaboration as defined in 
+Section [Chapter]~\ref{ch:static-modules}, and $\tsdyn$ for evaluation
+as defined in Section [Chapter]~\ref{ch:dynamic-modules}.
+Then $\ts$ will be reserved for the execution of
+programs, which thus is expressed by a sentence of the
+form
+\begin{equation*}
+\s,\B\ts\program\ra\B',\s'
+\end{equation*}
+This may be read as follows: 
+starting in basis $\B$ with state $\s$ the execution of
+$\program$ results in a basis $\B'$ and a state $\s'$.
+\end{definition}
+
+\begin{clause}{Programs never result in exceptions}
+Executing a program never results in an exception. If the evaluation of
+a $\topdec$ yields an exception (for instance because of a $\RAISE$ expression),
+then the result of executing the program ``$\topdec\ \mbox{\ml{;}}$''
+is the original basis together with the state which is in force when the
+exception is generated.
+
+In particular, this means the exception convention~\zref{convention:dynamic-modules:state-and-exception}
+is not applicable to the rules the Definition describes in this section
+[chapter]. 
+\end{clause}
+
+\begin{convention}{Non-elaboration of top-level declaration}
+The Definition represents the non-elaboration of a top-level declaration by
+ ``$\ldots\tsstat\topdec\not\ra$''.
+\end{convention}
+
+\rulesec{Programs}{\s,\B\ts\program\ra\B',s'}
+
+% 187
+\begin{inference-rule}{Failing elaboration}
+\begin{equation}\label{rule:programs:}
+\vcenter{\infer{\s,\B\ts\longprog\ra\B\optional{'},s\optional{'}}
+  {\of{\Bstat}{\B}\tsstat\topdec\not\ra
+    & \optional{\s,\B\ts\program\ra\B',s'}}}
+\end{equation}
+A failing elaboration has no effect whatever.
+\end{inference-rule}
+
+\begin{remark}{Implications of negative premise in rule 187}
+Rossberg~\cite{rossberg2018defects} observes the negative premise in
+rule 187 has unfortunate implications.
+
+If we interpret the rule strictly, it precludes any conforming
+implementation from proving any sort of conservative semantic extension
+to the language. Any extension that allows declarations to elaborate
+that would be illegal according to the Definition (e.g., polymorphic
+records) can be observed through this rule and change the behaviour of
+consecutive declarations. This could alter the observed behaviour of a
+program. Consider Rossberg's example:
+\begin{quote}\parskip=0pt
+  \texttt{val s = "no";}
+
+  \strdec
+
+  \texttt{val s = "yes";}
+
+  \texttt{print s;}
+\end{quote}
+where the $\strdec$ only elaborates if some extension is supported. In
+that case, the program will print \texttt{yes}, otherwise it will print
+\texttt{no}.
+
+Rossberg interprets this as suggesting that formalizing an interactive
+toplevel is not worth the trouble. He's probably right.
+\end{remark}
+
+% 188
+\begin{inference-rule}{Evaluation raising exception}
+\begin{equation}\label{rule:programs:evaluation-raising-exception}
+\vcenter{\infer{\s,\B\ts\longprog\ra\B\optional{'},\s'\optional{'}}
+  {\begin{array}{lr}
+      \of{\Bstat}{\B}\tsstat\topdec\ra\Bstat^{(1)} & \\
+      \s,\of{\Bdyn}{\B}\tsdyn\topdec\ra\p,\s' &
+                  \optional{\s',\B\ts\program\ra\B',\s''}
+   \end{array}}}
+\end{equation}
+An evaluation which yields an exception nullifies the change in the
+static basis, but does not nullify side-effects on the state which may
+have occurred before the exception was raised.
+\end{inference-rule}
+
+% 189
+\begin{inference-rule}{Success}
+\begin{equation}\label{rule:programs:success}
+\vcenter{\infer{\s,\B\ts\longprog\ra\B'\optional{'},\s'\optional{'}}
+  {\begin{array}{ll}
+    \of{\Bstat}{\B}\tsstat\topdec\ra\Bstat^{(1)} & \\
+    \s,\of{\Bdyn}{\B}\tsdyn\topdec\ra\Bdyn^{(1)},s'&
+                \B'=\B\oplus(\Bstat^{(1)},\Bdyn^{(1)})\\
+    &           \optional{\s',\B'\ts\program\ra\B'',s''}
+   \end{array}}}
+\end{equation}
+\end{inference-rule}
+
+\begin{definition}{Core language programs}
+A program is called a \define{Core Language Program} if it can be parsed
+in the reduced grammar defined as follows:
+\begin{enumerate}
+\item Replace the definition of top-level declarations by
+\begin{equation*}
+\topdec\ ::=\ \strdec
+\end{equation*}
+\item Replace the definition of structure-level declarations by
+\begin{equation*}
+\strdec\ ::=\ \dec
+\end{equation*}
+\end{enumerate}
+\end{definition}
