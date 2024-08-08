@@ -1,0 +1,976 @@
+\chapter{Dynamic Semantics for the Core}
+
+\section{Reduced Syntax}
+
+\begin{clause}{Core syntax reduced}
+Since types are mostly dealt with in the static semantics, the Core
+syntax is reduced by the following transformations, for the purpose of
+the dynamic semantics:
+\begin{enumerate}
+\item All explicit type ascriptions ``\ml{:} $\ty$\,'' are omitted, and
+      qualifications ``$\OF\  \ty\,$'' are omitted from constructor and
+      exception bindings.
+\item The Core phrase classes Ty and TyRow are omitted.
+\end{enumerate}
+\end{clause}
+
+\section{Simple Objects}
+
+\begin{definition}{Classes of simple objects}
+All objects in the dynamic semantics are built from the identifier
+classes together with the simple object classes listed below (note that
+basic values are discussed in their own section):
+\begin{equation*}
+\begin{array}{rclr}
+\A               & \in   & \Addr	& \mbox{addresses}\\
+\e               & \in   & \Exc 	& \mbox{exception names}\\
+b      		& \in	& \BasVal	& \mbox{basic values}\\
+\sv             & \in   & \SVal         & \mbox{special values}\\
+                &       & \{\FAIL\}     & \mbox{failure}
+\end{array}
+\end{equation*}
+\end{definition}
+
+\begin{clause}{Infinite set of addresses}
+\Addr\ forms an infinite set.
+\end{clause}
+
+\begin{clause}{Infinite set of exception names}
+\Exc\ forms an infinite set.
+\end{clause}
+
+\begin{clause}{Special values are values of special constants}
+{\SVal} is the class of values denoted by the special constants
+\SCon. Each integer, word, or real constant denotes a value according to normal 
+mathematical conventions; each string or character
+constant denotes a sequence of characters as explained in Section 2.2.
+\end{clause}
+
+\begin{definition}{Value of a special constant}\index{$\sconval(\scon)$}
+The value denoted by {\scon} is written $\sconval(\scon)$.
+\end{definition}
+
+\begin{clause}{Failure ``value''}
+$\FAIL$ is the result of a failing attempt to match a value and a
+pattern. Thus $\FAIL$ is neither a value nor an exception, but simply
+a semantic object used in the rules to express operationally
+how matching proceeds.
+\end{clause}
+
+\begin{clause}{Exception constructors evaluate to names}
+Exception constructors evaluate to exception names. This accomodates the
+generative nature of exception bindings: each evaluation of a
+declaration of an exception constructor binds it to a new unique name.
+\end{clause}
+
+\section{Compound Objects}
+
+\begin{definition}{Compound objects}
+The compound objects for dynamic semantics are listed thus:
+\begin{equation*}
+\begin{array}{rcl}
+        \V	&\in	&\Val =\{\mbox{\tt :=}\}\cup\SVal\cup\BasVal\cup\VId\\
+                &       &\qquad\quad\cup\:(\VId\times\Val)\cup\ExVal\\
+                &       &\qquad\quad\cup\:\Record\cup\Addr\cup\FcnClosure\\
+        \r      & \in   & \Record =  \finfun{\Lab}{\Val}\\
+{\exval}      & \in   & \ExVal = \Exc \cup (\Exc\times\Val)\\
+{[\exval]}\ {\rm or}\ \p
+                & \in   & \Pack = \ExVal\\
+(\match,\E,\VE) & \in   & \FcnClosure = \Match\times\Env\times\ValEnv\\
+        \mem    & \in   & \Mem = \finfun{\Addr}{\Val}\\
+        \excs   & \in   & \ExcSet = \Fin(\Exc)\\
+(\mem,\excs)\ {\rm or}\ \s
+                & \in   & \State = \Mem\times\ExcSet\\
+(\SE,\TE,\VE\ {\rm or}\ \E
+                & \in   & \Env = \StrEnv\times\TyEnv\times\ValEnv\\
+        \SE     & \in   & \StrEnv = \finfun{\StrId}{\Env}\\
+        \TE     & \in   & \TyEnv = \finfun{\TyCon}{\ValEnv}\\
+        \VE	& \in	& \ValEnv = \finfun{\VId}{\Val\times\IdStatus}
+\end{array}
+\end{equation*}
+\end{definition}
+
+\begin{convention}{Projection, injection, modification}
+The notions of projection, injection, and modification are adapted from
+the static semantics.
+\end{convention}
+
+\begin{clause}{Object classes disjoint}
+The object classes thus defined are all disjoint, so there is no
+ambiguity in taking unions as disjoint unions.
+\end{clause}
+
+\begin{clause}{Exception values and packets}
+Observe that $\ExVal$ and $\Pack$ (exception values and packets) are
+isomorphic classes, but the latter class corresponds to exceptions which
+have been raised, and therefore has different semantic significance from
+the former, which is just a subclass of values.
+\end{clause}
+
+\begin{remark}{Caution about overloaded notation}
+Although the same names (e.g., $\E$ for an environment) are used
+as in the static semantics, the objects denoted are different.
+This need cause no confusion since the static and dynamic semantics are
+presented separately. 
+\end{remark}
+
+\section{Basic Values}
+
+\begin{clause}{Simplified set of basic values}
+The Definition takes \BasVal\ to be the singleton set
+$\{\,\texttt{=}\,\}$, but allows for a larger set of basic values
+defined by libraries.
+\end{clause}
+
+\begin{clause}{APPLY gives meaning to basic values}
+The semantical meaning of basic values is represented by a function
+\begin{equation*}
+\APPLY\ :\ \BasVal\times\Val\to\Val\cup\Pack
+\end{equation*}
+which satisfies $\APPLY(\texttt{=},\{1\mapsto v_{1},2\mapsto v_{2}\})$
+is \texttt{true} if $v_{1}$ and $v_{2}$ are identical values, and
+\texttt{false} otherwise.
+\end{clause}
+
+\section{Basic Exceptions}
+
+\begin{clause}{Initial basis}
+A subset $\BasExc\subset\Exc$ of the exception names are bound to
+predefined exception constructors in the initial dynamic basis. These
+names are denoted by the identifiers to which they are bound in the
+initial basis, and are as follows:
+\begin{equation*}
+\texttt{Match\ \ Bind}
+\end{equation*}
+These exceptions are raised upon failure of pattern-matching in
+evaluating a function or a \valbind, as detailed inthe rules that follow.
+\end{clause}
+
+\begin{clause}{Match raised by nonexhaustive patterns}
+The exception \ml{Match} can only be raised for a match which is not
+exhaustive, and has therefore been flagged by the compiler~\zref{clause:static-core:warn-about-nonexhaustive-patterns}.
+\end{clause}
+
+\section{Function Closure}
+
+\begin{remark}{Closures are ``function values''}
+Intuitively, a function closure is precisely the ``value'' for a
+function expression. This is critical when trying to use, e.g.,
+equational reasoning for Standard ML.
+\end{remark}
+
+\begin{clause}{Informal explanation of closures}
+A function closure $(\match,\E,\VE)$ may be informally described as follows:
+when the function closure is applied to a value $\V$, $\match$ will be
+evaluated against $\V$, in the environment $\E$ modified in a special
+sense by $\VE$ (to allow for recursive functions). This happens by
+evaluating $\match$ in $\plusmap{\E}{\Rec\VE}$, which will be defined shortly.
+\end{clause}
+
+\begin{definition}{Rec operator on value environments}
+The function
+\begin{equation*}
+\Rec\ :\ \ValEnv\to\ValEnv
+\end{equation*}
+is defined as follows:
+\begin{enumerate}
+\item $\Dom(\Rec\VE)=\Dom\VE $
+\item If $\VE(\vid)\notin\FcnClosure\times\{\isv\}$,
+      then $(\Rec\VE)(\vid)=\VE(\vid)$
+\item If $\VE(\vid)=((\match',\E',\VE'), \isv)$
+      then $(\Rec\VE)(\vid)=((\match',\E',\VE), \isv)$
+\end{enumerate}
+\end{definition}
+
+\begin{remark}{$\Rec\VE$ ``unrolls'' function closures once}
+The effect of this definition is that --- before the application of the
+closure $(\match,\E,\VE)$ to $\V$ --- the function closures in $\Ran\VE$
+[not a type: $\Ran\VE$ is correct, see next example]
+are ``unrolled'' once, to prepare for their possible recursive
+application during the evaluation of $\match$ upon $\V$.
+
+This ensures all semantic objects are finite (by controlling the
+unrolling of recursion).
+\end{remark}
+
+% TODO: finish this
+\begin{example}{Example unrolling recursive function calls}
+It makes more sense to see this rule in action. I'm adapting the example
+from the Commentary~\cite[pp.1--12]{milner1991commentary}. Consider the
+example code:
+\begin{Verbatim}
+datatype NAT = Zero | Succ of NAT;
+
+fun twice(Zero) = Zero
+  | twice(Succ x) = Succ(Succ(twice(x)));
+
+twice(Zero);
+\end{Verbatim}
+The desugared code ``\texttt{twice = fn} $\match$'' will evaluate to
+\begin{equation*}
+\VE = \{\texttt{twice}\mapsto(\match,E_{1},\emptymap)\}.
+\end{equation*}
+The problem is that, looking at the $\VE$ appearing in the closure bound
+to \texttt{twice}: it's precisely $\VE_{\mathtt{twice}}=\emptymap$! So trying to lookup
+the identifier \texttt{twice} for a recursive function call will result
+in a failure.
+
+However, we don't look up \texttt{twice} in $\VE_{\mathtt{twice}}=\emptymap$
+but instead we're using
+\begin{equation*}
+\Rec\VE = \{\texttt{twice}\mapsto(\match,E_{1},\VE)\}.
+\end{equation*}
+This allows for proper recursive function calls.
+\end{example}
+
+\begin{remark}{Used only twice}
+The $\Rec$ operator is used only twice: in Rules (102) [the rule for
+  evaluating an application expression ``$\exp$ $\atexp$''], and (126)
+[governing recursive value bindings of the form ``\texttt{rec} $\valbind$''].
+\end{remark}
+
+\section{Inference Rules}
+
+\begin{definition}{Judgement form}
+The semantic rules govern judgemental forms like
+\begin{equation*}
+\s,A\ts\phrase\ra A',\s'
+\end{equation*}
+where $A$ is usually an environment, $A'$ is some semantic object, and
+here $s$, $s'$ are states before and after the evaluation which occurs
+in the judgement.
+\end{definition}
+
+\begin{definition}{Side-conditions}
+Some hypotheses in the rules are not of the form we just described. They
+are called \define{Side-Conditions}.
+\end{definition}
+
+\begin{clause}{Convention for options}
+The convention for options is the same as for the Core static semantics.
+\end{clause}
+
+\begin{convention}{State convention}
+In most cases, the state can be omitted from the inference rule. When
+omitted, the conventions for restoring them as is follows:
+If the rule is presented in the
+form
+\begin{equation*}
+ \frac{ \begin{array}{r}
+        A_{1}\ts\phrase_{1}\ra A'_{1}\qquad
+        A_{2}\ts\phrase_{2}\ra A'_{2}\quad\cdots\\
+        \cdots\quad A_{n}\ts\phrase_{n}\ra A'_{n}
+        \end{array}
+      }
+      { A\ts\phrase\ra A'}
+\end{equation*}
+then the full form is intended to be
+\begin{equation*}
+\frac{ \begin{array}{r}
+       \s_{0},A_{1}\ts\phrase_{1}\ra A'_{1},\s_{1}\qquad
+       \s_{1},A_{2}\ts\phrase_{2}\ra A'_{2},\s_{2}\quad\cdots\\
+       \cdots\quad\s_{n-1},A_{n}\ts\phrase_{n}\ra A'_{n},\s_{n}
+       \end{array}
+     }
+     { \s_{0},A\ts\phrase\ra A',\s_{n}}
+\end{equation*}
+(Any side-conditions are left unaltered).
+
+Thus the left-to-right order of the hypotheses indicates the order of
+evaluation.  Note that in the case $\n=0$, when there are no hypotheses
+(except possibly side-conditions), we have $\s_{n}=\s_{0}$; this implies that the
+rule causes no side effect.
+
+The Definition calls this convention the \define{State Convention}, and
+it must be applied to each version of a rule obtained by inclusion or
+omission of its options.
+\end{convention}
+
+\begin{convention}{Exception convention}
+The \define{Exception Convention} is adopted to deal with the
+propagation of exception packets $p$. For each rule whose full form
+(ignoring side-conditions) is
+\begin{equation*}
+\infer{ \s,A\ts\phrase\ra A',\s'}
+      { \s_{1},A_{1}\ts\phrase_{1}\ra A'_{1},\s'_{1}
+        & \cdots
+        & \s_{n},A_{n}\ts\phrase_{n}\ra A'_{n},\s'_{n} }
+\end{equation*}
+and for each $k$, $1\leq k\leq n$, for which the result $A'_{k}$ is not a
+packet $\p$, an extra rule is added of the form
+\begin{equation*}
+\infer{ \s,A\ts\phrase\ra \p',\s'}
+      { \s_{1},A_{1}\ts\phrase_{1}\ra A'_{1},\s'_{1}
+        & \cdots
+        & \s_{k},A_{k}\ts\phrase_{k}\ra \p',\s' }
+\end{equation*}
+where $\p'$ does not occur in the original rule. [The only exception is
+  rule 104, describing how exception handlers work.]
+This indicates that evaluation of phrases in the hypothesis terminates with the
+first whose result is a packet (other than one already treated in the rule),
+and this packet is the result of the phrase in the conclusion.
+\end{convention}
+
+\begin{convention}{Compound variables}
+The last convention allows for ``compound variables'' (built from the
+metavariables and a slash ``$/$'') to range over unions of semantic
+objects.
+
+For instance 
+the compound variable $\V/\p$ ranges
+over $\Val\cup\Pack$. 
+We also allow $x/\FAIL$ to range over $X\cup\{\FAIL\}$ where $x$ 
+ranges over $X$;
+furthermore, we extend environment modification to allow for failure
+as follows:
+\begin{equation*}
+\VE+\FAIL=\FAIL.
+\end{equation*}
+\end{convention}
+
+\rulesec{Atomic Expressions}{\E\ts\atexp\ra\V/\p}
+
+% 90
+\begin{inference-rule}{Special constant}
+\begin{equation}\label{rule:dynamic-core:sconexp}
+\vcenter{\infer{\E\ts\scon\ra\sconval(\scon)}
+  {}}
+\end{equation}
+\end{inference-rule}
+
+% 91
+\begin{inference-rule}{Value variable}
+\begin{equation}\label{rule:dynamic-core:varexp}
+\vcenter{\infer{\E\ts\longvid\ra\V}
+  {\E(\longvid)=(\V,\is)}}
+\end{equation}
+As in the static semantics, value identifiers are looked up in the
+environment and the identifier status is not used.
+\end{inference-rule}
+
+% 92
+\begin{inference-rule}{Record expression}
+\begin{equation}\label{rule:dynamic-core:recexp}
+\vcenter{\infer{\E\ts\lttbrace\ \recexp\ \rttbrace\ra\emptymap
+                                  \optional{ +\ \r}\ \In\ \Val}
+  {\optional{\E\ts\labexps\ra\r}}}
+\end{equation}
+\end{inference-rule}
+
+% 93
+\begin{inference-rule}{Let expressions}
+\begin{equation}\label{rule:dynamic-core:let}
+\vcenter{\infer{\E\ts\letexp\ra\V}
+  {\E\ts\dec\ra\E'
+    &\E+\E'\ts\exp\ra\V}}
+\end{equation}
+\end{inference-rule}
+
+% 94
+\begin{inference-rule}{Parenthesised expression}
+\begin{equation}\label{rule:dynamic-core:}
+\vcenter{\infer{\E\ts\parexp\ra\V}
+  {\E\ts\exp\ra\V}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Expression Rows}{\E\ts\labexps\ra\r/\p}
+
+% 95
+\begin{inference-rule}{Labelled expressions}
+\begin{equation}\label{rule:dynamic-core:labexps}
+\vcenter{\infer{\E\ts\longlabexps\ra\{\lab\mapsto\V\}\optional{ +\ \r}}
+    {\E\ts\exp\ra\V
+      & \optional{\E\ts\labexps\ra\r}}}
+\end{equation}
+We may think of components as being evaluated from left to right,
+because of the state and exception conventions.
+\end{inference-rule}
+
+\rulesec{Expressions}{\E\ts\exp\ra\V/\p}
+
+% 96
+\begin{inference-rule}{Atomic expressions}
+\begin{equation}\label{rule:dynamic-core:atexp}
+\vcenter{\infer{\E\ts\atexp\ra\V}{\E\ts\atexp\ra\V}}
+\end{equation}
+\end{inference-rule}
+
+% 97
+\begin{inference-rule}{Constructor application}
+\begin{equation}\label{rule:dynamic-core:conapp}
+\vcenter{\infer{\E\ts\appexp\ra(\vid,\V)}
+  {\E\ts\exp\ra\vid
+    & \vid\neq\REF
+    & \E\ts\atexp\ra\V}}
+\end{equation}
+Note that none of the rules for function application has a premise
+in which the operator evaluates to a constructed value, a record or an
+address. This is because we are interested in the evaluation of
+well-typed programs only, and in such programs $\exp$ will always have a
+functional type.
+\end{inference-rule}
+
+% 98
+\begin{inference-rule}{Exception constructor application}
+\begin{equation}\label{rule:dynamic-core:exception-constructor-application}
+\vcenter{\infer{\E\ts\appexp\ra(\e,\V)}
+  {\E\ts\exp\ra\e
+    & \E\ts\atexp\ra\V}}
+\end{equation}
+Note that none of the rules for function application has a premise
+in which the operator evaluates to a constructed value, a record or an
+address. This is because we are interested in the evaluation of
+well-typed programs only, and in such programs $\exp$ will always have a
+functional type.
+\end{inference-rule}
+
+% 99
+\begin{inference-rule}{Reference application}
+\begin{equation}\label{rule:dynamic-core:refapp}
+\vcenter{\infer{\s,\E\ts\appexp\ra\A,\ \s''+\{\A\mapsto\V\} }
+  {\s,\E\ts\exp\ra~\ml{ref}~,\s'
+    & \s',\E\ts\atexp\ra\V,\s''
+    & \A\notin\Dom(\of{\mem}{\s''})}}
+\end{equation}
+\begin{enumerate}
+\item The side condition ensures that a new address is chosen. There are no
+  rules concerning disposal of inaccessible addresses.
+\item Note that none of the rules for function application has a premise
+in which the operator evaluates to a constructed value, a record or an
+address. This is because we are interested in the evaluation of well-
+typed programs only, and in such programs $\exp$ will always have a
+functional type.
+\end{enumerate}
+\end{inference-rule}
+
+% 100
+\begin{inference-rule}{Assignment application}
+\begin{equation}\label{rule:dynamic-core:assapp}
+\vcenter{\infer{\s,\E\ts\appexp\ra\emptymap\ \In\ \Val,\ \s''+\{\A\mapsto\V\}}
+  {\s,\E\ts\exp\ra~\mbox{\tt :=}~,\s'
+    & \s',\E\ts\atexp\ra\{{\tt 1}\mapsto\A,\ {\tt 2}\mapsto\V\},\s''}}
+\end{equation}
+Note that none of the rules for function application has a premise
+in which the operator evaluates to a constructed value, a record or an
+address. This is because we are interested in the evaluation of
+well-typed programs only, and in such programs $\exp$ will always have a
+functional type.
+\end{inference-rule}
+
+% 101 
+\begin{inference-rule}{Basic function application}
+\begin{equation}\label{rule:dynamic-core:}
+  \vcenter{\infer{\E\ts\appexp\ra\V'/\p}
+    {\E\ts\exp\ra b
+      & \E\ts\atexp\ra\V
+      & \APPLY(b,\V)=\V'/\p}}
+\end{equation}
+Note that none of the rules for function application has a premise
+in which the operator evaluates to a constructed value, a record or an
+address. This is because we are interested in the evaluation of
+well-typed programs only, and in such programs $\exp$ will always have a
+functional type.
+\end{inference-rule}
+
+% 102
+\begin{inference-rule}{Closure application}
+\begin{equation}\label{rule:dynamic-core:closapp}
+\vcenter{\infer{\E\ts\appexp\ra\V'}
+  {\begin{array}{c}
+      \E\ts\exp\ra(\match,\E',\VE)\qquad\E\ts\atexp\ra\V\\
+      \E'+\Rec\VE,\ \V\ts\match\ra\V'
+      \end{array}}}
+\end{equation}
+Note that none of the rules for function application has a premise
+in which the operator evaluates to a constructed value, a record or an
+address. This is because we are interested in the evaluation of
+well-typed programs only, and in such programs $\exp$ will always have a
+functional type.
+\end{inference-rule}
+
+% 103
+\begin{inference-rule}{Failing closure application}
+\begin{equation}\label{rule:dynamic-core:closapp1}
+\vcenter{\infer{\E\ts\appexp\ra[{\tt Match}]}
+  {\begin{array}{c}
+      \E\ts\exp\ra(\match,\E',\VE)\qquad\E\ts\atexp\ra\V\\
+      \E'+\Rec\VE,\ \V\ts\match\ra\FAIL
+   \end{array}}}
+\end{equation}
+Note that none of the rules for function application has a premise
+in which the operator evaluates to a constructed value, a record or an
+address. This is because we are interested in the evaluation of
+well-typed programs only, and in such programs $\exp$ will always have a
+functional type.
+\end{inference-rule}
+
+% 104
+\begin{inference-rule}{Unexceptional handler}
+\begin{equation}\label{rule:dynamic-core:handlexp}
+\vcenter{\infer{\E\ts\handlexp\ra\V}
+  {\E\ts\exp\ra\V}}
+\end{equation}
+This is the only rule to which the exception convention does not apply.
+If the operator evaluates to a packet then rule 105 or rule 106 must be
+used.
+\end{inference-rule}
+
+% 105
+\begin{inference-rule}{Handled exception}
+\begin{equation}\label{rule:dynamic-core:handlexp2}
+\vcenter{\infer{\E\ts\handlexp\ra\V}
+  {\E\ts\exp\ra[\exval]\qquad\E,\exval\ts\match\ra\V}}
+\end{equation}
+\end{inference-rule}
+
+% 106
+\begin{inference-rule}{Unhandled exception}
+\begin{equation}\label{rule:dynamic-core:handlexp3}
+\vcenter{\infer{\E\ts\handlexp\ra[\exval]}
+  {\E\ts\exp\ra[\exval]
+    & \E,\exval\ts\match\ra\FAIL}}
+\end{equation}
+Packets that are not handled by the $\match$ propagate.
+\end{inference-rule}
+
+% 107
+\begin{inference-rule}{Raise exception}
+\begin{equation}\label{rule:dynamic-core:raisexp}
+\vcenter{\infer{\E\ts\raisexp\ra[\exval]}
+  {\E\ts\exp\ra\exval}}
+\end{equation}
+\end{inference-rule}
+
+% 108
+\begin{inference-rule}{Function}
+This evaluates a function expression to a function value.
+\begin{equation}\label{rule:dynamic-core:funexp}
+\vcenter{\infer{\E\ts\fnexp\ra(\match,\E,\emptymap)}
+  {}}
+\end{equation}
+The third component of the function closure is empty because the
+match does not introduce new recursively defined values.
+\end{inference-rule}
+
+\rulesec{Matches}{\E,\V\ts\match\ra\V'/\p/\FAIL}
+
+% 109
+\begin{inference-rule}{Match 1}
+This intuitively formalizes ``Go with the first match possible'' semantics.
+\begin{equation}\label{rule:dynamic-core:match1}
+\vcenter{\infer{\E,\V\ts\longmatch\ra\V'}{\E,\V\ts\mrule\ra\V'}}
+\end{equation}
+\end{inference-rule}
+
+% 110
+\begin{inference-rule}{Match 2}
+\begin{equation}\label{rule:dynamic-core:match2}
+\vcenter{\infer{\E,\V\ts\mrule\ra\FAIL}{\E,\V\ts\mrule\ra\FAIL}}
+\end{equation}
+\end{inference-rule}
+
+% 111
+\begin{inference-rule}{Match 3}
+Given a leading $\mrule$ which fails to match, but there is a rule in
+the rest of the $\match$ which either matches or fails\dots we go with
+that instead.
+\begin{equation}\label{rule:dynamic-core:match3}
+\vcenter{\infer{\E,\V\ts\longmatcha\ra\V'/\FAIL}
+  {\E,\V\ts\mrule\ra\FAIL
+    & \E,\V\ts\match\ra\V'/\FAIL}}
+\end{equation}
+Comment: A value $\V$ occurs on the left of the turnstile, in evaluating
+a $\match$. We may think of a $\match$ as being evaluated \emph{against}
+a value; similarly, we may think of a pattern as being evaluated
+\emph{against} a value. Alternative match rules are tried from left to
+right.
+\end{inference-rule}
+
+\rulesec{Match Rules}{\E,\V\ts\mrule\ra\V'/\p/\fail}
+
+% 112
+\begin{inference-rule}{Match a clause successfully}
+\begin{equation}\label{rule:dynamic-core:mrule1}
+\vcenter{\infer{\E,\V\ts\longmrule\ \ra\V'}
+  {\E,\V\ts\pat\ra\VE
+    & \E+\VE\ts\exp\ra\V'}}
+\end{equation}
+\end{inference-rule}
+
+% 113
+\begin{inference-rule}{Failing to match a pattern}
+\begin{equation}\label{rule:dynamic-core:mrule2}
+\vcenter{\infer{\E,\V\ts\longmrule\ \ra\FAIL}{\E,\V\ts\pat\ra\FAIL}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Declarations}{\E\ts\dec\ra\E'/\p}
+
+% 114
+\begin{inference-rule}{Value declaration}
+\begin{equation}\label{rule:dynamic-core:value-declaration}
+\vcenter{\infer{\E\ts\explicitvaldec\ra\VE\ \In\ \Env}
+  {\E\ts\valbind\ra\VE}}
+\end{equation}
+\end{inference-rule}
+
+% 115
+\begin{inference-rule}{Type alias}
+\begin{equation}\label{rule:dynamic-core:type-alias}
+\vcenter{\infer{\E\ts\typedec\ra\TE\ \In\ \Env}
+  {\ts\typbind\ra\TE}}
+\end{equation}
+\end{inference-rule}
+
+% 116
+\begin{inference-rule}{Datatype declaration}
+\begin{equation}\label{rule:dynamic-core:}
+\vcenter{\infer{\E\ts\datatypedec\ra(\VE,\TE)\ \In\ \Env}
+  {\ts\datbind\ra\VE,\TE}}
+\end{equation}
+\end{inference-rule}
+
+% 117
+\begin{inference-rule}{Datatype replication}
+\begin{equation}\label{rule:dynamic-core:}
+\vcenter{\infer{
+    \E\ts\datatyperepldec\ra
+    (\VE,\{\tycon\mapsto\VE\})\ \In\ \Env
+  }
+  {\E(\longtycon) = \VE}}
+\end{equation}
+\end{inference-rule}
+
+% 118
+\begin{inference-rule}{Abstract typing declaration}
+\begin{equation}\label{rule:dynamic-core:abstype}
+\vcenter{\infer{\E\ts\abstypedec \ra \E'}
+  {\ts\datbind\ra\VE,\TE
+    & \E+\VE\ts\dec\ra \E'}}
+\end{equation}
+\end{inference-rule}
+
+% 119
+\begin{inference-rule}{Exception declaration}
+\begin{equation}\label{rule:dynamic-core:exception-declaration}
+\vcenter{\infer{\E\ts\exceptiondec\ra\VE\ \In\ \Env }
+  {\E\ts\exnbind\ra\VE }}
+\end{equation}
+\end{inference-rule}
+
+% 120
+\begin{inference-rule}{Local declaration}
+\begin{equation}\label{rule:dynamic-core:local-declaration}
+\vcenter{\infer{\E\ts\localdec\ra\E_{2}}
+  {\E\ts\dec_{1}\ra\E_{1}
+    & \E+\E_{1}\ts\dec_{2}\ra\E_{2}}}
+\end{equation}
+\end{inference-rule}
+
+% 121
+\begin{inference-rule}{Open declaration}
+\begin{equation}\label{rule:dynamic-core:open-declaration}
+\vcenter{\infer{ \E\ts\openstrdec\ra \E_{1} + \syndots + \E_{n} }
+  { \E(\longstrid_{1})=\E_{1}
+    &\syndots
+    &\E(\longstrid_{n})=\E_{n} }}
+\end{equation}
+\end{inference-rule}
+
+% 122
+\begin{inference-rule}{Empty declaration}
+\begin{equation}\label{rule:dynamic-core:empty-declaration}
+\vcenter{\infer{\E\ts\emptydec\ra\emptymap\ \In\ \Env}
+  {}}
+\end{equation}
+\end{inference-rule}
+
+% 123
+\begin{inference-rule}{Sequential declaration}
+\begin{equation}\label{rule:dynamic-core:sequential-declaration}
+\vcenter{\infer{\E\ts\seqdec\ra\plusmap{E_{1}}{E_{2}}}
+  {\E\ts\dec_{1}\ra\E_{1}
+    &\E+\E_{1}\ts\dec_{2}\ra\E_{2}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Value Bindings}{\E\ts\valbind\ra\VE/\p}
+
+% 124
+\begin{inference-rule}{Nonrecursive, possibly simultaneous, bindings}
+\begin{equation}\label{rule:dynamic-core:valbind1}
+\vcenter{\infer{\E\ts\longvalbind\ra\VE\ \optional{ +\ \VE'}}
+  {\E\ts\exp\ra\V
+    & \E,\V\ts\pat\ra\VE
+    & \optional{\E\ts\valbind\ra\VE'}}}
+\end{equation}
+\end{inference-rule}
+
+% 125
+\begin{inference-rule}{Binding exception during declaration}
+\begin{equation}\label{rule:dynamic-core:binding-exception}
+\vcenter{\infer{\E\ts\longvalbind\ra[\ml{Bind}]}
+  {\E\ts\exp\ra\V
+    & \E,\V\ts\pat\ra\FAIL}}
+\end{equation}
+\end{inference-rule}
+
+% 126
+\begin{inference-rule}{Recursive value binding}
+\begin{equation}\label{rule:dynamic-core:recursive-value-binding}
+\vcenter{\infer{\E\ts\recvalbind\ra\Rec\VE}
+  {\E\ts\valbind\ra\VE}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Type Bindings}{\ts\typbind\ra\TE}
+% 127
+\begin{inference-rule}{Type binding}
+\begin{equation}\label{rule:dynamic-core:type-binding}
+\vcenter{\infer{\ts\longtypbind\ra\{\tycon\mapsto\emptymap\}\optional{+\TE}}
+  {\optional{\ts\typbind\ra\TE}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Datatype Bindings}{\ts\datbind\ra\VE,\TE}
+% 128
+\begin{inference-rule}{Datatype binding}
+\begin{equation}\label{rule:dynamic-core:datatype-binding}
+\vcenter{\infer{\ts\tyvarseq\;\tycon\boxml{=}\constrs\;\optional{\boxml{and}\,\datbind'}\ra\VE\optional{+\VE'},\{\tycon\mapsto\VE\}\optional{+\TE'}}
+  {\ts\constrs\ra\VE
+    & \optional{\ts\datbind'\ra\VE',\TE'}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Constructor Bindings}{\ts\constrs\ra\VE}
+
+% 129
+\begin{inference-rule}{Constructor binding}
+\begin{equation}\label{rule:dynamic-core:constructor-binding}
+\vcenter{\infer{\ts\vid\optional{\boxml{|}\,\constrs}\ra
+    \{\vid\mapsto(\vid,\isc)\}\,\optional{+\VE}}
+  {\optional{\ts\constrs\ra\VE}}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Exception Bindings}{\E\ts\exnbind\ra\VE}
+
+% 130
+\begin{inference-rule}{Exception binding}
+\begin{equation}\label{rule:dynamic-core:exception-binding1}
+\vcenter{\infer{\s,\E\ts\longvidexnbindaa\ra\{\vid\mapsto(\e,\ise)\}\optional{ +\ \VE},\
+    \s'\optional{'}}
+  {\e\notin\of{\excs}{\s}
+    & \s'=\s+\{\e\}
+    & \optional{\s',\E\ts\exnbind\ra\VE,\s''} }}
+\end{equation}
+The two side conditions ensure that a new exception name is generated
+and recorded as ``used'' in subsequent states.
+\end{inference-rule}
+
+% 131
+\begin{inference-rule}{Looking up exception binding in environment}
+When a $\longvid$ is bound to an exception.
+\begin{equation}\label{rule:dynamic-core:exception-binding2}
+\vcenter{\infer{\E\ts\longvidexnbindb\ra\{\vid\mapsto(\e,\ise)\}\optional{+\ \VE}}
+  {\E(\longvid)=(\e,\ise)
+    & \optional{\E\ts\exnbind\ra\VE} }}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Atomic Patterns}{\E,\V\ts\atpat\ra\VE/\fail}
+
+% 132
+\begin{inference-rule}{Wildcard pattern}
+\begin{equation}\label{rule:dynamic-core:wildcard-pattern}
+\vcenter{\infer{\E,\V\ts\wildpat\ra \emptymap}
+  {}}
+\end{equation}
+\end{inference-rule}
+
+% 133
+\begin{inference-rule}{Successfully match against special constant}
+\begin{equation}\label{rule:dynamic-core:sconpat1}
+\vcenter{\infer{\E,\V\ts\scon\ra \emptymap}
+  {\V=\sconval(\scon)}}
+\end{equation}
+\end{inference-rule}
+
+% 134
+\begin{inference-rule}{Fail to match against special constant}
+\begin{equation}\label{rule:dynamic-core:sconpat2}
+\vcenter{\infer{\E,\V\ts\scon\ra \FAIL}
+  {\V\neq\sconval(\scon)}}
+\end{equation}
+Any evaluation resulting in $\FAIL$ must do so because 
+rule~\ref{rule:dynamic-core:sconpat2},
+rule~\ref{rule:dynamic-core:value/exception-constructor-pattern-fail},
+rule~\ref{rule:dynamic-core:conpat-fail},
+or rule~\ref{rule:dynamic-core:exception-constructor-match-fail}
+has been applied.
+\end{inference-rule}
+
+% 135
+\begin{inference-rule}{Variable pattern}
+\begin{equation}\label{rule:dynamic-core:variable-pattern}
+\vcenter{\infer{\E,\V\ts\vid\ra \{\vid\mapsto(\V,\isv)\} }
+  {\hbox{$\vid\notin\Dom(\E)$ or $\of{\is}{\E(\vid)} = \isv$}}}
+\end{equation}
+\end{inference-rule}
+
+% 136
+\begin{inference-rule}{Value/exception constructor pattern}
+\begin{equation}\label{rule:dynamic-core:value/exception-constructor-pattern}
+\vcenter{\infer{\E,\V\ts\longvid\ra\emptymap}
+  {\E(\longvid)=(\V,\is)
+    & \is\neq\isv}}
+\end{equation}
+\end{inference-rule}
+
+% 137
+\begin{inference-rule}{Value/exception constructor pattern fail}
+\begin{equation}\label{rule:dynamic-core:value/exception-constructor-pattern-fail}
+\vcenter{\infer{\E,\V\ts\longvid\ra\FAIL}
+  {\E(\longvid)=(\V',\is)
+    &\is\neq\isv
+    &\V\neq\V'}}
+\end{equation}
+Any evaluation resulting in $\FAIL$ must do so because 
+rule~\ref{rule:dynamic-core:sconpat2},
+rule~\ref{rule:dynamic-core:value/exception-constructor-pattern-fail},
+rule~\ref{rule:dynamic-core:conpat-fail},
+or rule~\ref{rule:dynamic-core:exception-constructor-match-fail}
+has been applied.
+\end{inference-rule}
+
+% 138
+\begin{inference-rule}{Record pattern}
+\begin{equation}\label{rule:dynamic-core:record-pattern}
+\vcenter{\infer{\E,\V\ts\lttbrace\ \optional{\labpats}\ \rttbrace\ra\emptymap\optional{+\VE/\fail}}
+    {\V=\emptymap\optional{+\r}\ \In\ \Val
+      & \optional{\E,\r\ts\labpats\ra\VE/\fail}}}
+\end{equation}
+\end{inference-rule}
+
+% 139
+\begin{inference-rule}{Parenthesised pattern}
+\begin{equation}\label{rule:dynamic-core:parenthesised-pattern}
+\vcenter{\infer{\E,\V\ts\parpat\ra\VE/\fail}
+  {\E,\V\ts\pat\ra\VE/\fail}}
+\end{equation}
+\end{inference-rule}
+
+\rulesec{Pattern Rows}{\E,\r\ts\labpats\ra\VE/\fail}
+
+% 140
+\begin{inference-rule}{Wildcard record}
+\begin{equation}\label{rule:dynamic-core:wildcard-record}
+\vcenter{\infer{\E,\r\ts\wildrec\ra\emptymap}
+  {}}
+\end{equation}
+\end{inference-rule}
+
+% 141
+\begin{inference-rule}{Record component with inherited FAIL}
+\begin{equation}\label{rule:dynamic-core:longlab-dyn-rule1}
+\vcenter{\infer{\E,\r\ts\longlabpats\ra\FAIL}
+  {\E,\r(\lab)\ts\pat\ra\FAIL}}
+\end{equation}
+For well-typed programs $\lab$ will be in the domain of $\r$.
+\end{inference-rule}
+
+% 142
+\begin{inference-rule}{Record component}
+\begin{equation}\label{rule:dynamic-core:record-component}
+\vcenter{\infer{\E,\r\ts\longlabpats\ra
+    \VE\optional{ +\ \VE'/\fail}}
+  {\E,\r(\lab)\ts\pat\ra\VE
+    & \optional{\E,\r\ts\labpats\ra\VE'/\fail} }}
+\end{equation}
+For well-typed programs $\lab$ will be in the domain of $\r$.
+\end{inference-rule}
+
+\rulesec{Patterns}{\E,\V\ts\pat\ra\VE/\fail}
+
+% 143
+\begin{inference-rule}{Atomic pattern}
+\begin{equation}\label{rule:dynamic-core:atomic-pattern}
+\vcenter{\infer{\E,\V\ts\atpat\ra \VE/\fail}
+  {\E,\V\ts\atpat\ra \VE/\fail}}
+\end{equation}
+\end{inference-rule}
+
+% 144
+\begin{inference-rule}{Construction pattern}
+\begin{equation}\label{rule:dynamic-core:conpat-rule1}
+\vcenter{\infer{\E,\V\ts\vidpat\ra \VE/\fail}
+  {\begin{array}{c}
+      \E(\longvid) = (\vid,\isc)\qquad\vid\neq\REF\qquad
+      \V=(\vid,\V')\\
+      \E,\V'\ts\atpat\ra\VE/\fail
+\end{array}}}
+\end{equation}
+\end{inference-rule}
+
+% 145
+\begin{inference-rule}{Construction pattern failure}
+\begin{equation}\label{rule:dynamic-core:conpat-fail}
+\vcenter{\infer{\E,\V\ts\vidpat\ra \FAIL}
+  {\E(\longvid) = (\vid,\isc)
+    & \vid\neq\REF
+    & \V\notin\{\vid\}\times\Val}}
+\end{equation}
+Any evaluation resulting in $\FAIL$ must do so because 
+rule~\ref{rule:dynamic-core:sconpat2},
+rule~\ref{rule:dynamic-core:value/exception-constructor-pattern-fail},
+rule~\ref{rule:dynamic-core:conpat-fail},
+or rule~\ref{rule:dynamic-core:exception-constructor-match-fail}
+has been applied.
+\end{inference-rule}
+
+% 146
+\begin{inference-rule}{Exception constructor match}
+\begin{equation}\label{rule:dynamic-core:exception-constructor-match}
+\vcenter{\infer{\E,\V\ts\vidpat\ra\VE/\FAIL}
+  {\begin{array}{c}
+      \E(\longvid)=(\e,\ise)\qquad\V=(\e,\V')\\
+      \E,\V'\ts\atpat\ra\VE/\FAIL
+      \end{array}
+}}
+\end{equation}
+\end{inference-rule}
+
+% 147
+\begin{inference-rule}{Exception constructor match fail}
+\begin{equation}\label{rule:dynamic-core:exception-constructor-match-fail}
+\vcenter{\infer{\E,\V\ts\vidpat\ra\FAIL}
+  {\E(\longvid)=(\e,\ise)
+    & \V\notin\{\e\}\times\Val}}
+\end{equation}
+Any evaluation resulting in $\FAIL$ must do so because 
+rule~\ref{rule:dynamic-core:sconpat2},
+rule~\ref{rule:dynamic-core:value/exception-constructor-pattern-fail},
+rule~\ref{rule:dynamic-core:conpat-fail},
+or rule~\ref{rule:dynamic-core:exception-constructor-match-fail}
+has been applied.
+\end{inference-rule}
+
+% 148
+\begin{inference-rule}{Reference pattern}
+\begin{equation}\label{rule:dynamic-core:reference-pattern}
+\vcenter{\infer{\s,\E,\A\ts\REF\ \atpat\ra \VE/\fail,\s}
+  {\s(\A)=\V
+    & \s,\E,\V\ts\atpat\ra\VE/\fail,\s}}
+\end{equation}
+\end{inference-rule}
+
+% 149
+\begin{inference-rule}{Layered pattern}
+\begin{equation}\label{rule:dynamic-core:layered-pattern}
+\vcenter{\infer{\E,\V\ts\layeredvidpata\ra\{\vid\mapsto(\V,\isv)\}+\VE/\fail}
+  {\E,\V\ts\pat\ra\VE/\fail}}
+\end{equation}
+\end{inference-rule}
+
+

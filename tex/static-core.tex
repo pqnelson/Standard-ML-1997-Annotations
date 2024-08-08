@@ -1172,7 +1172,7 @@ $\vid\ \atpat_{1}\ \syndots\ \atpat_{n}\langle : \ty\rangle$\ \ml{=}\ $\exp$
 exhaustive by itself.
 \end{clause}
 
-\begin{clause}{Warn about nonexhaustive patterns, but still compile}
+\begin{clause}{Warn about nonexhaustive patterns, but still compile}\label{clause:static-core:warn-about-nonexhaustive-patterns}
 For each value binding $\pat\ \mbox{\ml{=}}\ \exp$ the compiler must
 issue a report (but still compile) if $\pat$ is not exhaustive.  This
 will detect a mistaken declaration like
