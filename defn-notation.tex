@@ -919,7 +919,9 @@
   \gdef\comment{\textit{ Comment:\ }}}
 \def\unloadSML{\global\let\comment\og@comment}
 \newcommand{\comments}{\textit{ Comments:\ }}
-\newcommand{\rulesec}[2]{\subsection*{{#1}\hfill\fbox{\normalfont$#2$}}}
+% The \ifx#1\relax\else...\fi is necessary because in chapter 5, there
+% is an empty rulesec
+\newcommand{\rulesec}[2]{\subsection*{\phantomsection{#1}\hfill\fbox{\normalfont$#2$}}\ifx#1\relax\else\addcontentsline{toc}{subsection}{#1}\fi}
 %
 %\font\msxm=msxm10
 %\textfont10=\msxm
