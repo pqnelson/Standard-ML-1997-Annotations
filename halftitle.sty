@@ -1,5 +1,8 @@
 \ProvidesPackage{halftitle}[2024/07/31 Half-title page]
 
+%% This is a generic "half-title" page, with stuff commented out
+%% which is irrelevant for the current endeavour.
+
 \newif\ifincludegitrevision\includegitrevisionfalse
 
 % The [git] option will print the git version info [abbreviated commit
@@ -55,37 +58,37 @@
 \@ifundefined{math@subject@classes}{}{
   \noindent Mathematics Subject Classiﬁcation (MSC \math@subject@year):\quad\math@subject@classes}
 
-\bigskip\medskip
-\noindent
-{\bf Suggested Library of Congress cataloging data}
+%% \bigskip\medskip
+%% \noindent
+%% {\bf Suggested Library of Congress cataloging data}
 
-\medskip
+%% \medskip
 
-{\tt\halign{##\hfil\cr
-Nelson, Alexander M., 1988-\cr
-\ \ \  \thetitle.\cr
-\noalign{\medskip}
-\ \ \  Includes index.\cr
-\ \ \  1.~ML (Computer program language).\ \ I.~Title.\cr
-}}
+%% {\tt\halign{##\hfil\cr
+%% Nelson, Alexander M., 1988-\cr
+%% \ \ \  \thetitle.\cr
+%% \noalign{\medskip}
+%% \ \ \  Includes index.\cr
+%% \ \ \  1.~ML (Computer program language).\ \ I.~Title.\cr
+%% }}
 \vfill
 \noindent
 \draftprintingline
 \smallbreak
 \noindent
 Copyright $\copyright$ \number\year, Alexander M.\ Nelson.
-\smallbreak
-\noindent
-All rights reserved.
-\smallbreak
-\noindent
-The author hereby grants permission to print this book draft for personal use.
+%% \smallbreak
+%% \noindent
+%% All rights reserved.
+%% \smallbreak
+%% \noindent
+%% The author hereby grants permission to print this book draft for personal use.
 
-\noindent
-Public redistribution of this book draft in PDF or other electronic form on the Internet is forbidden.
+%% \noindent
+%% Public redistribution of this book draft in PDF or other electronic form on the Internet is forbidden.
 
-\noindent
-Public distribution of this book draft in printed form is forbidden.
+%% \noindent
+%% Public distribution of this book draft in printed form is forbidden.
 
 \noindent
 You may not charge any fee for copies of this book draft.
@@ -96,8 +99,8 @@ Compiled:\enspace\today\ at \textsc{\DTMcurrenttime}\ (\DTMcurrentzone)
 \noindent
 This book was typeset by the author using the \LaTeX\ typesetting system.
 
-\noindent
-The illustrations in this book were created by the author with \Hologo{METAPOST}.
+%% \noindent
+%% The illustrations in this book were created by the author with \Hologo{METAPOST}.
 \ifincludegitrevision\smallbreak
 \noindent
 This revision: \texttt{\revision}. \thegitdate.\fi}}
