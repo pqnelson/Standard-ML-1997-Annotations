@@ -90,7 +90,7 @@
 \newcommand{\vid}{\nonterminal{vid}}
 \newcommand{\var}{\nonterminal{var}}
 \newcommand{\con}{\nonterminal{con}}
-\newcommand{\scon}{\nonterminal{scon}}
+\newcommand{\scon}{\linkednonterminal[defn:scon]{scon}}
 \newcommand{\exn}{\nonterminal{excon}}
 \newcommand{\tyvar}{\nonterminal{tyvar}}
 \newcommand{\atyvar}{\mbox{\tt \ttprime a}}
@@ -99,8 +99,8 @@
 \newcommand{\aityvar}{\mbox{\tt \ttprime\_a}}
 \newcommand{\aetyvar}{\mbox{\tt \ttprime\ttprime a}}
 \newcommand{\tycon}{\nonterminal{tycon}}
-\newcommand{\lab}{\nonterminal{lab}}
-\newcommand{\strid}{\nonterminal{strid}}
+\newcommand{\lab}{\linkednonterminal[defn:record-and-numeric-labels]{lab}}
+\newcommand{\strid}{\linkednonterminal[defn:StrId]{strid}}
 
 \newcommand{\longvid}{\nonterminal{longvid}}
 \newcommand{\longvar}{\nonterminal{longvar}}
@@ -771,7 +771,7 @@
 \newcommand{\TyVarFcn}{\mathop{\rm tyvars}\nolimits}
 \newcommand{\imptyvars}{\mathop{\rm imptyvars}\nolimits}
 \newcommand{\apptyvars}{\mathop{\rm apptyvars}\nolimits}
-\newcommand{\scontype}{\mathop{\rm type}\nolimits}
+\newcommand{\scontype}{\mathop{\hyperref[defn:scontype]{\rm type}}\nolimits}
 \newcommand{\sconval}{\mathop{\rm val}\nolimits}
 %
 %         Compound Objects (Modules)
@@ -807,8 +807,8 @@
 %
 %         Names in Structures
 \newcommand{\StrNamesFcn}{\mathop{\rm strnames}\nolimits}
-\newcommand{\TyNamesFcn}{\mathop{\rm tynames}\nolimits}
-\newcommand{\TyVarsFcn}{\mathop{\rm tyvars}\nolimits}
+\newcommand{\TyNamesFcn}{\mathop{\hyperref[defn:tynames-tyvars]{\rm tynames}}\nolimits}
+\newcommand{\TyVarsFcn}{\mathop{\hyperref[defn:tynames-tyvars]{\rm tyvars}}\nolimits}
 \newcommand{\NamesFcn}{\mathop{\rm names}\nolimits}
 %
 %         Type Schemes (assume math mode)

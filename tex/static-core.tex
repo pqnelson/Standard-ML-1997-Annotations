@@ -47,7 +47,7 @@ Each $t\in\TyNames$ has an \define{Arity} $k\geq0$, and also posses an
 names with arity $k$ by $\TyNames^{(k)}$.
 \end{definition}
 
-\begin{definition}{Type of special constants}\index{Type!of special constants}\index{Special constant!Type}\index{type scon@$\scontype(\scon)$}\index{$\scontype(\scon)$}
+\begin{definition}{Type of special constants}\label{defn:scontype}\index{Type!of special constants}\index{Special constant!Type}\index{type scon@$\scontype(\scon)$}\index{$\scontype(\scon)$}
 With each special constant {\scon} we associate a
 \define{Type Name}, denoted $\scontype(\scon)$, which is either {\INT}, {\REAL},
 {\WORD}, {\CHAR},  or {\STRING} as indicated by Section~2.2.
@@ -134,7 +134,7 @@ semantic object classes. All the defined object classes are understood
 to be disjoint.
 \end{clause}
 
-\begin{definition}{Free type names and free type variables}
+\begin{definition}{Free type names and free type variables}\label{defn:tynames-tyvars}
 For any semantic object $A$, the Definition denotes by:
 \begin{enumerate}
 \item ``$\TyNamesFcn A$'' the set of type names, and
