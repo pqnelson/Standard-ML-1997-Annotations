@@ -104,14 +104,14 @@ TopDec  & top-level declarations\cr
 \end{longtable}
 \end{grammar}
 
-\begin{remark}{Ambiguous grammar for \nonterminal{strdec}}
+\begin{comment}{Ambiguous grammar for \nonterminal{strdec}}
 Rossberg~\cite{rossberg2018defects} notes that the production rule for
 sequential structure declarations ``\nonterminal{strdec}$_{1}$ \optional{\texttt{;}} \nonterminal{strdec}$_{2}$''
 is ambiguous. Is it left-associative or right-associative?
 
 I'd advocate for making it right recursive, so we could write a simple
 recursive descent parser for Standard ML.
-\end{remark}
+\end{comment}
 
 \begin{grammar}{Signatures}
 The syntax for signatures:

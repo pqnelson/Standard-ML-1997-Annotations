@@ -15,7 +15,7 @@ used as identifiers (except for ``\texttt{=}''):
 \end{verbatim}
 \end{definition}
 
-\begin{remark}{Ambiguity about reserved words}
+\begin{comment}{Ambiguity about reserved words}
 Kahrs~\cite{kahrs1993mistakes} points out that there is ambiguity in the
 notion of ``reserved words'', since there are reserved words \emph{in
 the Core} and reserved words \emph{in Modules}. The Definition is not
@@ -23,7 +23,7 @@ clear with what it means by the term (at least, it is not clear to me).
 
 I interpret ``reserved words'' to refer to those appearing \emph{either}
 in Core (listed above) \emph{or} in Modules~\zref{defn:syntax-modules:reserved-words}.
-\end{remark}
+\end{comment}
 
 \section{Special Constants}\label{sec:ch2:special-constant}
 
@@ -551,8 +551,7 @@ declaration ($n\geq1$)\\
 \end{longtable}
 \end{grammar}
 
-
-\begin{remark}{Ambiguous grammar for \nonterminal{dec}}
+\begin{comment}{Ambiguous grammar for \nonterminal{dec}}
 Rossberg~\cite{rossberg2018defects} observes that the grammar given for
 \nonterminal{dec} is highly ambiguous. For example, combining the empty
 declaration \emph{and} sequencing allows the derivation of arbitrary
@@ -564,9 +563,9 @@ can be reduced in two ways to \nonterminal{dec}: either via
 ``\nonterminal{dec$_{12}$} \nonterminal{dec$_{3}$}'' or via ``\nonterminal{dec$_{1}$} \nonterminal{dec$_{23}$}''.
 Rossberg cites Kahrs~\cite[\S8.3]{kahrs1993mistakes} for this second
 ambiguity, which Kahrs expands upon with several more severe ambiguities.
-\end{remark}
+\end{comment}
 
-\begin{remark}{Proposed alternative grammar for declarations}
+\begin{comment}{Proposed alternative grammar for declarations}
 It seems to me the correct grammar for declarations should be to
 introduce a syntactic class for `atomic declarations' ``$adec$'',
 another syntactic class for a [possibly semicolon separated,
@@ -598,7 +597,7 @@ declaration ($n\geq1$)\\
 \nonterminal{dec} & $::=$ & &empty declaration\\
                   &  \alt &$adecseq$ & sequential declarations\\
 \end{longtable}
-\end{remark}
+\end{comment}
 
 \section{Syntactic restrictions}\label{sec:syntax-core:syntactic-restrictions}
 
@@ -639,7 +638,7 @@ numerical analyst, you should be staying away from floating-point
 arithmetic altogether\dots)
 \end{clause}
 
-\begin{remark}{Problem stems from \texttt{real} is not equality type}
+\begin{comment}{Problem stems from \texttt{real} is not equality type}
 The difficulty with the previous clause (real constants cannot appear in
 patterns) stems from \texttt{real} is not an equality type. This (real
 not being an equality type) has felt wrong to me, since the IEEE 754
@@ -652,7 +651,7 @@ need to distinguish ``equality types'' from ``non-equality types''! But
 if we allow equality for real constants, the only possible surprise is
 that \texttt{NaN} is never equal to anything else (i.e., we lose
 reflexivity). 
-\end{remark}
+\end{comment}
 
 \begin{clause}{Type variable restrictions in value declarations}\label{clause:syntax-core:type-variable-restrictions-in-value-declarations}
 In a value declaration ``\texttt{val} \nonterminal{tyvarseq} \nonterminal{valbind}'', if

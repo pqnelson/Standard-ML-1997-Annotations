@@ -18,7 +18,7 @@ the draught of a draught. Oh, Time, Strength, Cash, and Patience!
 \end{quote}
 \end{remark}
 
-\begin{comment}{Commentary or reconstruction?}
+\begin{remark}{Commentary or reconstruction?}
 This is an attempt to understand the 1997 Revised
 Definition~\cite{milner1997definition}, but I am not sure if it should
 be a ``rational reconstruction'' (using anachronistic tools and terms to
@@ -36,9 +36,9 @@ this document. That's my goal. Towards that end, I suppose I need a
 
 \emph{Specifically, this document is geared towards \textbf{understanding}
 the Definition.} So I guess that makes it a ``commentary'' after all\dots
-\end{comment}
+\end{remark}
 
-\begin{comment}{``The Definition'' refers to the 1997 definition}
+\begin{remark}{``The Definition'' refers to the 1997 definition}
 We will stop citing the 1997 Revised
 Definition~\cite{milner1997definition} and henceforth refer to it as
 ``the Definition'' (capitalized). If we want to refer to the 1990
@@ -48,21 +48,32 @@ Definition~\cite{milner1990definition}, then we will refer to it as
 When quoting explicitly from the Definition, we will still cite the
 bibliography entry, as well as provide the pages found in the printed
 version. 
-\end{comment}
+\end{remark}
 
-\begin{comment}{Organization of this document}
+\begin{remark}{Aside on pedagogical approaches}
+This is probably not the best way to \emph{learn} the Definition. I
+suspect Milner and Tofte's Commentary~\cite{milner1991commentary} has
+the right approach pedagogically: start with some code snippet, then
+work through how the Definition elaborates and evaluates the example code.
+Do this for many different examples.
+
+The ordering and choice in examples is then the difficulty for the
+author of such a commentary.
+\end{remark}
+
+\begin{remark}{Organization of this document}
 This commentary is organized ``in parallel'' to the Definition. That is
 to say, the chapters from 2 onwards is commenting on their
 correspondingly numbered chapters in the 1997 revised Definition.
 
-This contrasts with Milner and Tofte's commentary, which works through
+This contrasts with Milner and Tofte's Commentary~\cite{milner1991commentary}, which works through
 the 1990 Definition starting with evaluating expressions, then the static
 typechecking. Their commentary is probably more enjoyable (and certainly
 better written) than mine, but I am trying to understand the 1997
 Definition completely.
-\end{comment}
+\end{remark}
 
-\begin{comment}{Method of working, species of propositions}
+\begin{remark}{Method of working, species of propositions}
 We will break up the 1997 Definition into atomic propositions,
 definitions, and inference rules; then we will try to reconstruct what
 we can from these components. Each atomic proposition is numbered within
@@ -96,7 +107,7 @@ basic heuristics for their meaning:
 \item ``Theorem'' is self-explanatory;
 \item ``Proposition'' is usually a theorem which is not as important;
 \end{enumerate}
-\end{comment}
+\end{remark}
 
 \begin{deviation}{Fragment of Standard ML}\label{deviation:no-redefinitions}
 We will work with the ``fragment'' of Standard ML which has the

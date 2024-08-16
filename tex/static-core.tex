@@ -218,11 +218,11 @@ Components may be injected into tuple classes; for example
 $(\emptymap,\emptymap,\VE)$.
 \end{definition}
 
-\begin{remark}{Injections initialize all other components to empty set}
+\begin{comment}{Injections initialize all other components to empty set}
 I think what the Definition means to say is that an injection ``$x$ \In\ $y$''
 amounts to a ``constructor'' of a new Y tuple whose components are all
 the empty set \emph{except} the X factor.
-\end{remark}
+\end{comment}
 
 \begin{convention}{Modification of environment}
 Extending the notation for modifying finite maps~\zref{defn:static-core:modifying-finite-maps},
@@ -352,13 +352,13 @@ The Definition considers a type $\tau$ to be a type scheme, identifying it with
 $\forall().\tau$.
 \end{clause}
 
-\begin{remark}{Type schemes should be thought of as ``most general type''?}
+\begin{comment}{Type schemes should be thought of as ``most general type''?}
 I think that type schemes should be considered as the ``most general
 type'' for a given expression $e$. If that expression $e$ is used in a
 situation which requires a ``less general type'' (i.e., $e$'s most
 general type successfully generalizes the situation's required type),
 then it typechecks alright.
-\end{remark}
+\end{comment}
 
 \section{Scope of Explicit Type Variables}\label{sec:static-core:scope-of-explicit-type-variables}
 
@@ -581,10 +581,10 @@ equality on  an $\ABSTYPE$ is restricted to the $\WITH$ part.)
 \end{enumerate}
 \end{definition}
 
-\begin{remark}{Abs(\TE, \E) used for abstype declarations only}
+\begin{comment}{Abs(\TE, \E) used for abstype declarations only}
 Note that this last definition for $\Abs(\TE,\E)$ is used only in
 Rule~\eqref{rule:static-core:abstype-declaration} of the Definition for \texttt{abstype} declarations.
-\end{remark}
+\end{comment}
 
 \section{Inference Rules}\label{section:static-core:inference-rules}
 
@@ -637,15 +637,15 @@ also $\TyNamesFcn\E'\subseteq\T'$.
 \end{quote}
 \end{clause}
 
-\begin{remark}{Equation numbers match Definition's rule numbers}
+\begin{comment}{Equation numbers match Definition's rule numbers}
 Again, for the sake of consistency, the number for the rule found in the
 Definition is written here as its Equation number.
-\end{remark}
+\end{comment}
 
-\begin{remark}{Comments swept into the rule}
+\begin{comment}{Comments swept into the rule}
 Note that I have relocated the ``comments'' found in the Definition to
 appear in the relevant rule, when it simplifies the presentation.
-\end{remark}
+\end{comment}
 
 \rulesec{Atomic Expressions}{\C\vdash\atexp\Rightarrow\tau}
 
@@ -1155,12 +1155,12 @@ The syntactic constraints ensure $\lab\notin\Dom\varrho$.
 
 \section{Further Restrictions}
 
-\begin{remark}{Additional impositions}
+\begin{comment}{Additional impositions}
 In addition to the inference rules given above, there are three
 restrictions the Definition imposes. These all concern pattern matching,
 which would be tedious to write down using inference rules (and I, at
 least, would find them confusingly misplaced among typing rules).
-\end{remark}
+\end{comment}
 
 \begin{clause}{Record pattern must determine uniquely the set of labels}
 For each occurrence of a record pattern containing a record wildcard

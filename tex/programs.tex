@@ -94,7 +94,7 @@ The Definition represents the non-elaboration of a top-level declaration by
 A failing elaboration has no effect whatever.
 \end{inference-rule}
 
-\begin{remark}{Implications of negative premise in rule 187}
+\begin{comment}{Implications of negative premise in rule 187}
 Rossberg~\cite{rossberg2018defects} observes the negative premise in
 rule 187 has unfortunate implications.
 
@@ -120,7 +120,7 @@ that case, the program will print \texttt{yes}, otherwise it will print
 
 Rossberg interprets this as suggesting that formalizing an interactive
 toplevel is not worth the trouble. He's probably right.
-\end{remark}
+\end{comment}
 
 % 188
 \begin{inference-rule}{Evaluation raising exception}
@@ -150,7 +150,7 @@ have occurred before the exception was raised.
 \end{equation}
 \end{inference-rule}
 
-\begin{remark}{Ambiguity in semicolons}
+\begin{comment}{Ambiguity in semicolons}
 Recall~\zref{clause:syntax-modules:top-declaration-restriction} ``No \nonterminal{topdec} may contain, as an initial segment, a
 \nonterminal{strdec} followed by a semicolon.'' Kahr~\cite[\oldS8.3]{kahrs1993mistakes}
 and Rossberg~\cite{rossberg2018defects} both point out this is a problem.
@@ -171,9 +171,9 @@ Rossberg resolves this problem by having HaMLet's parser reduce to
 $\strdec$ as soon as possible (since this solves other problems as
 well). This seems to be the ``spirit of the Law'', even if the ``letter
 of the Law'' leaves much to be desired.
-\end{remark}
+\end{comment}
 
-\begin{definition}{Core language programs}
+\begin{definition}{Core language programs}\label{defn:core-language-programs}
 A program is called a \define{Core Language Program} if it can be parsed
 in the reduced grammar defined as follows:
 \begin{enumerate}
