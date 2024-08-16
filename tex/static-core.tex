@@ -12,6 +12,20 @@ eventually combine into ``compound'' semantic objects (like types or
 environments). 
 \end{remark}
 
+\begin{remark}{Definition describes how to produce trees}
+The Definition describes how to produce (what Milner and Tofte~\cite{milner1991commentary} call)
+`elaboration trees' using the static semantics, and `evaluation trees' 
+using the dynamic semantics. This may be surprising to readers familiar
+with type theory having learned it from, e.g., TAPL where evaluation is
+just a judgement form described using inference rules.
+
+So be forewarned: the static module chapter describes how to form these
+elaboration trees, the static core chapter describes one particular form
+of a ``structure declaration''. The dynamic chapters describe analogous
+results with the evaluation trees. The last chapter describes how to
+combine the two for a program.
+\end{remark}
+
 \section{Simple Objects}\label{sec:static-core:simple-objects}
 
 \begin{definition}{Type constructor names}
@@ -56,15 +70,17 @@ With each special constant {\scon} we associate a
 \section{Compound Objects}\label{sec:static-core:compound-objects}
 
 \begin{definition}{Collection of finite subsets}\index{$\Fin A$}\index{Fin A@$\Fin A$}
-Let $A$ be a set. The Definition uses the notation $\Fin A$ for the
+Let $A$ be a set. The Definition uses the notation ``$\Fin A$'' for the
 collection of all finite subsets of $A$.
 \end{definition}
 
 \begin{definition}{Finite maps}\index{Finite map}\index{$\finfun{A}{B}$}
-Let $A$, $B$ be sets. Then the Definition denotes by $\finfun{A}{B}$ the
+Let $A$, $B$ be sets. Then the Definition denotes by ``$\finfun{A}{B}$'' the
 set of all \define{Finite Maps} (partial functions with finite domain)
-from $A$ to $B$. The domain and range of a finite map $f$ are denoted
-$\Dom f$ and $\Ran f$.
+from $A$ to $B$.
+
+The domain and range of a finite map $f$ are denoted
+``$\Dom f$'' and ``$\Ran f$'', respectively.
 
 A finite map may be written explicitly in the form $\kmap{a}{b},
 \ k\geq 0$;
@@ -91,7 +107,7 @@ $\Dom f \cup \Dom g$ and values
 
 \begin{remark}{Notation for modifying finite maps}
 In my opinion, the notation $f+g$ is unfortunate because addition is
-commutative\footnote{Except for ordinals, where $4+\omega=\omega$.}, but $f+g\neq g+f$ when
+commutative\footnote{Except for ordinals, where $1+\omega=\omega$ but $\omega+1=\omega\cup\{\omega\}$.}, but $f+g\neq g+f$ when
 $\Dom f\cap\Dom g\neq\emptyset$. Although I dislike it, and would never
 use it in a million years in my own personal work, I am trying to adhere
 to the Definition's conventions.
@@ -311,8 +327,8 @@ if $\alpha_i$ does.
 \end{definition}
 
 \begin{definition}{Generalizes a scheme}
-A type scheme $\tych=\forall\alphak.\tau$ \define{generalizes} $\tych'=\forall\beta^{(l)}.\tau'$,
-written $\tych\succ\tych'$, if $\tych\succ\tau'$ and $\beta^{(l)}$ contains
+A type scheme $\tych=\forall\alphak.\tau$ \define{generalizes} $\tych'=\forall\beta^{(\ell)}.\tau'$,
+written $\tych\succ\tych'$, if $\tych\succ\tau'$ and $\beta^{(\ell)}$ contains
 no free type variable of $\tych$.
 
 It can be shown that $\tych\succ\tych'$ iff, for all $\tau''$, whenever
@@ -335,6 +351,14 @@ and $\beta$ admit equality, or neither does.
 The Definition considers a type $\tau$ to be a type scheme, identifying it with
 $\forall().\tau$.
 \end{clause}
+
+\begin{remark}{Type schemes should be thought of as ``most general type''?}
+I think that type schemes should be considered as the ``most general
+type'' for a given expression $e$. If that expression $e$ is used in a
+situation which requires a ``less general type'' (i.e., $e$'s most
+general type successfully generalizes the situation's required type),
+then it typechecks alright.
+\end{remark}
 
 \section{Scope of Explicit Type Variables}\label{sec:static-core:scope-of-explicit-type-variables}
 
