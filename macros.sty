@@ -28,13 +28,13 @@
 \def\inferTabSkip{\qquad}
 
 \RequirePackage{amsmath,amssymb}
-\usepackage{xcolor}
+\RequirePackage{xcolor}
 \RequirePackage[notlot,notlof]{tocbibind}
 \RequirePackage[useregional,en-US]{datetime2}
 \DTMlangsetup[en-US]{zone=pacific,mapzone=true}
 \RequirePackage{etoolbox}
-\RequirePackage{amsthm}
 \RequirePackage{enumitem}
+
 \ifscreen
 \usepackage[textwidth=29pc,% amsbook uses 30pc,
   % knuth uses 29pc for TAOCP
@@ -59,8 +59,13 @@
 \allowdisplaybreaks
 
 \RequirePackage{ifpdf}
-\RequirePackage[\ifpdf\else dvipdfmx\fi,
-pagebackref=true]{hyperref}
+\ifpdf
+  \RequirePackage[pagebackref=true]{hyperref}
+\else
+  \RequirePackage[dvipdfmx,
+    pagebackref=true]{hyperref}
+\fi
+
 % eTeX uses this color for links, it's better than BrickRed imho
 \definecolor{linkRed}{cmyk}{0.28, 1, 1, 0.35}
 \hypersetup{colorlinks=true,
@@ -70,6 +75,10 @@ pagebackref=true]{hyperref}
     urlcolor=linkRed,
     breaklinks
 }
+
+% Enumitem customization (mostly based off of amsbook)
+\setlist[enumerate]{label=(\arabic*),partopsep=0pt,itemsep=0pt,parsep=0pt,
+topsep=0pt, leftmargin=\parindent}
 
 %% ArXiV links
 \def\arXiv{\@ifnextchar[{\@arXivWith}{\@arXivWithout}}
@@ -117,9 +126,6 @@ pagebackref=true]{hyperref}
     \if@restonecol\twocolumn\fi
 }
 
-% Mostly based off of amsbook
-\setlist[enumerate]{label=(\arabic*),partopsep=0pt,itemsep=0pt,parsep=0pt,
-topsep=0pt, leftmargin=\parindent}
 
 
 % avoid resetting page number to 1
@@ -232,8 +238,8 @@ delim_0 ""
 \def\hyperindexformat#1#2{#1{#2}}
 
 
+%% Dangerous bend environment
 \RequirePackage{manfnt}
-%% Dangerous bend
 % Danger, Will Robinson!
 \newenvironment{danger}{\medbreak\noindent\hangindent=2pc\hangafter=-2%
   \clubpenalty=10000%
