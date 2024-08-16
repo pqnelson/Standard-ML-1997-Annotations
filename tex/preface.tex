@@ -1,0 +1,138 @@
+\chapter{Preface}
+
+\begin{remark}{Work in progress}
+This is a perpetual work in progress. Originally I hoped to learn enough
+of the Definition of Standard ML to recast it in a more palatable form,
+but that seems now to be a fool's errand.
+
+I suspect I will work on this for a while, get bored, abandon it, then
+revisit it much later on and iterate this process.
+
+\begin{quote}
+For small erections may be finished by their first architects; grand
+ones, true ones, ever leave the copestone to posterity. God keep me from
+ever completing anything. This whole book is but a draught---nay, but
+the draught of a draught. Oh, Time, Strength, Cash, and Patience!
+
+--- Herman Melville, \textit{Moby Dick}, Chapter 32 (1851)
+\end{quote}
+\end{remark}
+
+\begin{comment}{Commentary or reconstruction?}
+This is an attempt to understand the 1997 Revised
+Definition~\cite{milner1997definition}, but I am not sure if it should
+be a ``rational reconstruction'' (using anachronistic tools and terms to
+``build from scratch'' the contents of the definition) or a
+``commentary'' (trying to articulate the rather terse text).
+
+Milner and Tofte wrote a commentary~\cite{milner1991commentary} on the
+original 1990 Definition~\cite{milner1990definition}.  It's arguable how
+similar the two Definitions are to each other. This makes the usefulness
+of Milner and Tofte's commentary subject to debate.
+
+I want to be able to reason about Standard ML code with the results of
+this document. That's my goal. Towards that end, I suppose I need a
+``bit of both''.
+
+\emph{Specifically, this document is geared towards \textbf{understanding}
+the Definition.} So I guess that makes it a ``commentary'' after all\dots
+\end{comment}
+
+\begin{comment}{``The Definition'' refers to the 1997 definition}
+We will stop citing the 1997 Revised
+Definition~\cite{milner1997definition} and henceforth refer to it as
+``the Definition'' (capitalized). If we want to refer to the 1990
+Definition~\cite{milner1990definition}, then we will refer to it as
+``the 1990 Definition'' (also capitalized).
+
+When quoting explicitly from the Definition, we will still cite the
+bibliography entry, as well as provide the pages found in the printed
+version. 
+\end{comment}
+
+\begin{comment}{Organization of this document}
+This commentary is organized ``in parallel'' to the Definition. That is
+to say, the chapters from 2 onwards is commenting on their
+correspondingly numbered chapters in the 1997 revised Definition.
+
+This contrasts with Milner and Tofte's commentary, which works through
+the 1990 Definition starting with evaluating expressions, then the static
+typechecking. Their commentary is probably more enjoyable (and certainly
+better written) than mine, but I am trying to understand the 1997
+Definition completely.
+\end{comment}
+
+\begin{comment}{Method of working, species of propositions}
+We will break up the 1997 Definition into atomic propositions,
+definitions, and inference rules; then we will try to reconstruct what
+we can from these components. Each atomic proposition is numbered within
+each section, for ease of reference.
+
+There are different ``species'' of propositions we offer. Right now, the
+basic heuristics for their meaning:
+\begin{enumerate}
+\item ``Deviation'' means we are intentionally departing from the
+  definition somehow (e.g., simplifying it by refusing to allow ``='' to
+  be a valid identifier that could be defined);
+\item ``Clauses'' are rules, constraints, conditions, etc., imposed or
+  required by the Definition; (this term is chosen to be consistent with
+  the terminology found in, e.g., IEEE standards documents --- it is not
+  used by the Definition);
+\item ``Rules'' are inference rules the Definition gives (plus some of my
+  commentary explaining its signficance);
+\item ``Comments'' are comments which I am producing for the sake of
+  commenting, clarifying, explicating;
+\item ``Remarks'' are\dots remarks --- they are asides, not necessarily
+  shedding light on the meaning of a clause or ``ur text'', but
+  comparisons to how other languages do things, or what we've learned
+  since the Definition was drafted; you know, things we find\dots remarkable\dots;
+\item ``Puzzle'' are open questions which, as far as I know, do not have
+  a solution (and I would be very excited to learn more about);
+\item ``Definition'' defines a new phrase or term;
+\item ``Convention'' usually refers to conventions adopted for
+  metavariables or notation;
+\item ``Example'' offers an illustrative example of some concept,
+  definition, or term;
+\item ``Theorem'' is self-explanatory;
+\item ``Proposition'' is usually a theorem which is not as important;
+\end{enumerate}
+\end{comment}
+
+\begin{deviation}{Fragment of Standard ML}\label{deviation:no-redefinitions}
+We will work with the ``fragment'' of Standard ML which has the
+following constraints: in the same scope, we cannot redefine a function,
+constant, whatever.
+
+When we declare a new structure (or signature), we \emph{can} ``reuse''
+an identifier and any references using that identifier refers to the
+``new'' definition.
+
+Any duplicate definitions --- or reusing the same identifier in the same
+scope --- for the same structure, type, variable, or data constructor
+will be flagged as an error.
+
+This is the same constraint that, e.g., Haskell has on redefinitions.
+\end{deviation}
+
+\begin{puzzle}{Formalize the definition using \FS0/?}
+Can we formalize the Definition using Feferman's \FS0/ set theory?
+Ostensibly, this seems plausible, but I honestly do not know.
+
+Arguably, the more natural metatheory would be some flavor of HOL.
+\end{puzzle}
+
+\begin{remark}{Acknowledgements}
+The formatting of propositions is heavily inspired by Alan
+U.\ Kennington's book on differential geometry~\cite{kennington2024dg}.
+
+I am also heavily referring to the source of the Definition,
+which has been made available online for free.\footnote{\url{https://github.com/SMLFamily/The-Definition-of-Standard-ML-Revised/}}
+I have borrowed some of their formatting macros.
+The wildcard pattern macro ``\wildcard'' I borrowed from LHS2\TeX\ (if
+memory serves me), but the syntactic ellipses ``\syndots'' as well as
+the wildcard row pattern ``\wildcardrow'' I have hacked together.
+
+Many of the comments which Kahrs~\cite{kahrs1993mistakes,kahrs1996addenda}
+and Rossberg~\cite{rossberg2018defects} have made have been integrated
+into this text, with citations to who observed what.
+\end{remark}
