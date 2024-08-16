@@ -1,3 +1,10 @@
+\newif\iflink\linkfalse
+\DeclareOption{link}{
+  \linktrue
+}
+
+\ProcessOptions\relax
+
 \newcommand{\ml}[1]{\texttt{#1}}
 \newcommand{\boxml}[1]{\hbox{\tt #1}}
 \def\ignore#1{}
@@ -73,7 +80,12 @@
 \newcommand{\FunId}{{\rm FunId}}
 \newcommand{\SigId}{{\rm SigId}}
 
-          % Identifier class variables
+% Identifier class variables
+
+\newcommand\linkednonterminal[2][\@empty]{\iflink\hyperref[\ifx#1\@empty%
+    grammar:#2%
+    \else%
+    #1\fi]{\nonterminal{#2}}\else\nonterminal{#2}\fi}
 \newcommand{\id}{\nonterminal{id}}
 \newcommand{\vid}{\nonterminal{vid}}
 \newcommand{\var}{\nonterminal{var}}
@@ -102,16 +114,16 @@
 
           % Core Syntax Classes
 \newcommand{\apexp}{\nonterminal{appexp}}
-\newcommand{\atpat}{\nonterminal{atpat}}
-\newcommand{\atexp}{\nonterminal{atexp}}
+\newcommand{\atpat}{\linkednonterminal{atpat}}
+\newcommand{\atexp}{\linkednonterminal{atexp}}
 \newcommand{\bind}{\nonterminal{bind}}
-\newcommand{\constrs}{\nonterminal{conbind}}
+\newcommand{\constrs}{\linkednonterminal{conbind}}
 \newcommand{\ConBind}{{\rm ConBind}}
-\newcommand{\datbind}{\nonterminal{datbind\/}}
-\newcommand{\dec}{\nonterminal{dec}}
+\newcommand{\datbind}{\linkednonterminal{datbind}}
+\newcommand{\dec}{\linkednonterminal{dec}}
 \newcommand{\dir}{\nonterminal{dir}}
-\newcommand{\exnbind}{\nonterminal{exbind}}
-\renewcommand{\exp}{\nonterminal{exp}}
+\newcommand{\exnbind}{\linkednonterminal{exbind}}
+\renewcommand{\exp}{\linkednonterminal{exp}}
 \newcommand{\nexp}{\nonterminal{nexp}}
 \newcommand{\conexp}{\nonterminal{conexp}}
 \newcommand{\nexprow}{\nonterminal{nexprow}}
@@ -119,17 +131,17 @@
 \newcommand{\handler}{\nonterminal{handler}}
 \newcommand{\hanrule}{\nonterminal{hrule}}
 \newcommand{\inexp}{\nonterminal{infexp}}
-\newcommand{\labexps}{\nonterminal{exprow}}
-\newcommand{\labpats}{\nonterminal{patrow}}
-\newcommand{\labtys}{\nonterminal{tyrow}}
-\newcommand{\match}{\nonterminal{match}}
-\newcommand{\pat}{\nonterminal{pat}}
-\newcommand{\mrule}{\nonterminal{mrule}}
-\newcommand{\ty}{\nonterminal{ty}}
+\newcommand{\labexps}{\linkednonterminal{exprow}}
+\newcommand{\labpats}{\linkednonterminal{patrow}}
+\newcommand{\labtys}{\linkednonterminal{tyrow}}
+\newcommand{\match}{\linkednonterminal{match}}
+\newcommand{\pat}{\linkednonterminal{pat}}
+\newcommand{\mrule}{\linkednonterminal{mrule}}
+\newcommand{\ty}{\linkednonterminal{ty}}
 \newcommand{\tyseq}{\nonterminal{tyseq}}
 \newcommand{\tyvarseq}{\nonterminal{tyvarseq}}
-\newcommand{\typbind}{\nonterminal{typbind}}
-\newcommand{\valbind}{\nonterminal{valbind}}
+\newcommand{\typbind}{\linkednonterminal{typbind}}
+\newcommand{\valbind}{\linkednonterminal{valbind}}
 
  % ranged over by the variables
 
@@ -138,11 +150,11 @@
 
        % Modules syntax classes
 
-\newcommand{\datdesc}{\nonterminal{datdesc}}
-\newcommand{\condesc}{\nonterminal{condesc}}
-\newcommand{\exndesc}{\nonterminal{exdesc}}
-\newcommand{\funbind}{\nonterminal{funbind}}
-\newcommand{\fundec}{\nonterminal{fundec}}
+\newcommand{\datdesc}{\linkednonterminal{datdesc}}
+\newcommand{\condesc}{\linkednonterminal{condesc}}
+\newcommand{\exndesc}{\linkednonterminal{exdesc}}
+\newcommand{\funbind}{\linkednonterminal{funbind}}
+\newcommand{\fundec}{\linkednonterminal{fundec}}
 \newcommand{\fundesc}{\nonterminal{fundesc}}
 \newcommand{\funid}{\nonterminal{funid}}
 \newcommand{\funsigexp}{\nonterminal{funsigexp}}
@@ -150,20 +162,20 @@
 \newcommand{\funtyp}{\nonterminal{funtyp}}
 \newcommand{\longstridk}{\strid_{1}.\syndots.\strid_{k}}
 \newcommand{\longtyconk}{\strid_{1}.\syndots.\strid_{k}.\tycon}
-\newcommand{\topdec}{\nonterminal{topdec}}
+\newcommand{\topdec}{\linkednonterminal{topdec}}
 \newcommand{\program}{\nonterminal{program}}
 \newcommand{\sigid}{\nonterminal{sigid}}
 \newcommand{\shareq}{\nonterminal{shareq}}
-\newcommand{\sigbind}{\nonterminal{sigbind}}
-\newcommand{\sigdec}{\nonterminal{sigdec}}
-\newcommand{\sigexp}{\nonterminal{sigexp}}
-\newcommand{\spec}{\nonterminal{spec}}
-\newcommand{\strbind}{\nonterminal{strbind}}
-\newcommand{\strdec}{\nonterminal{strdec}}
-\newcommand{\strexp}{\nonterminal{strexp}}
-\newcommand{\strdesc}{\nonterminal{strdesc}}
-\newcommand{\typdesc}{\nonterminal{typdesc}}
-\newcommand{\valdesc}{\nonterminal{valdesc}}
+\newcommand{\sigbind}{\linkednonterminal{sigbind}}
+\newcommand{\sigdec}{\linkednonterminal{sigdec}}
+\newcommand{\sigexp}{\linkednonterminal{sigexp}}
+\newcommand{\spec}{\linkednonterminal{spec}}
+\newcommand{\strbind}{\linkednonterminal{strbind}}
+\newcommand{\strdec}{\linkednonterminal{strdec}}
+\newcommand{\strexp}{\linkednonterminal{strexp}}
+\newcommand{\strdesc}{\linkednonterminal{strdesc}}
+\newcommand{\typdesc}{\linkednonterminal{typdesc}}
+\newcommand{\valdesc}{\linkednonterminal{valdesc}}
 \newcommand{\typabbr}{\nonterminal{typabbr}}
            % Core Language Phrases
 
@@ -1034,3 +1046,6 @@
 \ 
 \clearpage
 \thispagestyle{headings}}
+
+
+\endinput
