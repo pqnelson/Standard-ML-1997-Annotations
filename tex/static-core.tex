@@ -49,6 +49,17 @@ t                & \in   & \TyNames     & \mbox{type names}\\
 \end{equation*}
 \end{clause}
 
+\begin{comment}{Type names internally track \texttt{datatype} type operators}
+Just for clarity's sake, the $t\in\TyNames$ are metasymbols which are
+freshly generated whenever a \texttt{datatype} declaration is encountered. This
+technically differs from a type operator (which is constructed whenever
+a \texttt{type} alias is encountered).
+
+But we can still meaningfully talk about the ``arity'' of a type name.
+The Definition allows for eta-equivalence, so $\Lambda\alphak.t$ is
+replaceable by $t$.
+\end{comment}
+
 \begin{definition}{Equality attribute, admitting equality}
 Each $\alpha\in\TyVar$ possesses a Boolean \define{Equality} attribute,
 which determines whether or not it \define{Admits Equality}, i.e.,
@@ -158,6 +169,12 @@ For any semantic object $A$, the Definition denotes by:
 \end{enumerate}
 Note that $\Lambda$ and $\forall$ bind type variables.
 \end{definition}
+
+\begin{comment}{Universal quantifier}
+The universal quantifier $\forall$ has a similar meaning as used in
+System F, it appears. But what TAPL calls ``type application'' is
+handled implicitly rule~\eqref{rule:static-core:value-variable}.
+\end{comment}
 
 \begin{definition}{Value identifier status}
 There are several things to note here:
@@ -471,6 +488,13 @@ expression will neither (a) generate an exception, nor (b) extend the
 domain of memory. But the evaluation of an expansive expression might.
 \end{clause}
 
+\begin{comment}{Non-expansive expressions used in closure of value declarations}
+We should note that the notion of ``non-expansive expressions'' only
+matters in the definition of the Closure of a value environment relative
+to a value binding declaration~\zref{defn:closing-value-environment}.
+This occurs in let-expressions, which is the value restriction rule.
+\end{comment}
+  
 \section{Closure}\label{sec:closure}
 
 \begin{definition}{Closure of a type with respect to a semantic object}
@@ -933,6 +957,17 @@ The syntactic restrictions~(\oldS\oldS\ref{clause:syntax-core:restriction:no-rep
 $\typefcnk$ satisfies the well-formedness constraint of 
 Section~\ref{section:type-functions} and they ensure $tycon\notin\Dom\TE$.
 \end{inference-rule}
+
+\begin{remark}{Type operators enter here}
+This is the only way for type operators to appear, it's through type
+binding rules.
+
+Datatypes introduce new ``primitive notions'', as it were: a ``type name''
+which acts like a tagged pair. This resembles a type operator, but does
+not expand the ``tag'' part at all. The Definition makes a distinction
+between type operators [``type functions''] and ``type names'', but this
+seems more like a distinction without a difference.
+\end{remark}
 
 \rulesec{Datatype Bindings}{\C\ts\datbind\ra\VE,\TE}
 
