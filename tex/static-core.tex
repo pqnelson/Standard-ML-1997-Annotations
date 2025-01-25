@@ -12,6 +12,13 @@ eventually combine into ``compound'' semantic objects (like types or
 environments). 
 \end{remark}
 
+\begin{puzzle}{Strength of metatheory?}
+These ``semantic objects'' live in some kind of metatheory or
+metalanguage. How strong must this metalanguage must be? Presumably
+HOL suffices (so something like Zermelo set theory also suffices), but
+would a weaker metatheory work?
+\end{puzzle}
+
 \begin{remark}{Definition describes how to produce trees}
 The Definition describes how to produce (what Milner and Tofte~\cite{milner1991commentary} call)
 `elaboration trees' using the static semantics, and `evaluation trees' 
@@ -25,6 +32,18 @@ of a ``structure declaration''. The dynamic chapters describe analogous
 results with the evaluation trees. The last chapter describes how to
 combine the two for a program.
 \end{remark}
+
+\begin{puzzle}{Related static semantics to Hindley--Milner type system}
+The Hindley--Milner type system describes a type theory for some
+polymorphic simply-typed lambda calculus. Some references (like
+Benjamin Pierce's TAPL) use a typing judgement with ``constraints'' to
+describe the Hindley--Milner type system. (I believe the original
+paper had the typing judgement look like $\Gamma\vdash t:T,S$ where
+$S$ is a substitution used in unifying expressions. Pierce turned $S$
+into a constraint.) How can we extend this traditional presentation of
+Hindley--Milner to Standard ML's static semantics? Is this even the
+``right way'' to look at things?
+\end{puzzle}
 
 \section{Simple Objects}\label{sec:static-core:simple-objects}
 
@@ -493,6 +512,20 @@ We should note that the notion of ``non-expansive expressions'' only
 matters in the definition of the Closure of a value environment relative
 to a value binding declaration~\zref{defn:closing-value-environment}.
 This occurs in let-expressions, which is the value restriction rule.
+
+In effect, this is how let-polymorphism is implemented in Standard
+ML. I should work through, as an example, how the static semantics
+determines the typing of the program:
+\begin{verbatim}
+fun foo (x : string) : unit =
+  let
+    fun id y = y
+  in
+    print (Bool.toString(id true));
+    print (id "\nmore stuff\n");
+    print x
+  end;
+\end{verbatim}
 \end{comment}
   
 \section{Closure}\label{sec:closure}

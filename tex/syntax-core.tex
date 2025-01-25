@@ -43,6 +43,19 @@ a nonempty sequence of decimal digits, and in hexadecimal notation
 \texttt{0wx} followed by a non-empty sequence of hexadecimal digits.
 \end{definition}
 
+\begin{remark}{Ambiguities about word size}
+The Definition makes no assumptions about the word size, and treats it
+merely as `some kind of unsigned integer'. This is unfortunate. In
+hindsight, perhaps it should have included a line like ``The maximum
+value for a word is determined by the computer architecture.''\dots or
+something to that effect.
+
+In practice, SML/NJ tells me, on my 64-bit Intel 2.80 GHz Core 2 Duo
+T9600 laptop, that \texttt{Word.wordSize} is 31 and \texttt{SysWord.wordSize} is 32.
+Examining the output of \texttt{cat /proc/cpuinfo}, I find that ``\texttt{address sizes   : 36 bits physical, 48 bits virtual}''.
+I have no clue what is going on here practically speaking.
+\end{remark}
+
 \begin{definition}{Real constant}
 A \define{Real Constant} is an integer constant in decimal notation,
 possibly followed by a point (\texttt{.}) and one or more decimal
@@ -93,6 +106,17 @@ denoting an integer in the ordinal range of the alphabet).\cr
              of one or more formatting characters.\cr
 }
 \end{definition}
+
+\begin{remark}{Unicode string literals}
+The Definition pre-dates the Unicode string encodings and string
+literals, so we sadly cannot have string literals with emojis. More
+seriously, we cannot have string literals with mathematical symbols,
+which is a problem if we're trying to write a proof assistant (which I
+am!). For example, you would need to write \verb|"\u00e2\u0088\u0080"|
+if you wanted to write $\forall$, which\dots seems horribly
+unhelpful.\footnote{I learned this from Michael Norrish's query on the
+Poly/ML mailing list \url{https://lists.inf.ed.ac.uk/pipermail/polyml/2008-August/000435.html}}
+\end{remark}
 
 \begin{definition}{Formatting characters}\label{defn:syntax-core:formatting-characters}
 The \define{Formatting Characters} are a subset of the non-printable
@@ -147,6 +171,13 @@ by:
 
 The qualified identifiers link the Core and Modules.
 \end{definition}
+
+\begin{remark}{Long identifiers determined by static module semantics}
+The rules governing ``When will `\texttt{val foo = \dots}' be given a
+long identifier or not?'' Well, that's specified by
+Chapter~\ref{ch:static-modules} the static semantics of modules,
+specifically structure declarations and structure bindings.
+\end{remark}
 
 \begin{clause}{Classes of identifiers}
 There are five classes of identifiers:

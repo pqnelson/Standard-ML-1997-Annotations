@@ -96,7 +96,7 @@ TopDec  & top-level declarations\cr
 &\alt&\texttt{let} \nonterminal{strdec} \texttt{in} \nonterminal{strexp} \texttt{end} & local declaration\\
 \phantomsection\label{grammar:strdec}\nonterminal{strdec} & $::=$ & \hyperref[grammar:dec]{\nonterminal{dec}}
 & declaration\\
-&\alt&\texttt{let} \texttt{structure} \nonterminal{strbind} & structure\\
+&\alt&\texttt{structure} \nonterminal{strbind} & structure\\
 &\alt&\texttt{local} \nonterminal{strdec}$_{1}$ \texttt{in} \nonterminal{strdec}$_{2}$ \texttt{end} & local declaration\\
 &\alt& & empty\\
 &\alt&\nonterminal{strdec}$_{1}$ \optional{\texttt{;}} \nonterminal{strdec}$_{2}$ & sequential\\
@@ -109,8 +109,8 @@ Rossberg~\cite{rossberg2018defects} notes that the production rule for
 sequential structure declarations ``\nonterminal{strdec}$_{1}$ \optional{\texttt{;}} \nonterminal{strdec}$_{2}$''
 is ambiguous. Is it left-associative or right-associative?
 
-I'd advocate for making it right recursive, so we could write a simple
-recursive descent parser for Standard ML.
+I'd advocate for making it a right recursive production rule, so we
+could write a simple recursive descent parser for Standard ML.
 \end{comment}
 
 \begin{grammar}{Signatures}
